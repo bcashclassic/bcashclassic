@@ -5,13 +5,12 @@
  * Refer to the LICENSE file for licensing information
  */
 
-#include "response/get_balances.h"
+#include "cclient/response/get_balances.h"
 
 get_balances_res_t* get_balances_res_new() {
-  get_balances_res_t* res =
-      (get_balances_res_t*)malloc(sizeof(get_balances_res_t));
+  get_balances_res_t* res = (get_balances_res_t*)malloc(sizeof(get_balances_res_t));
   if (res) {
-    utarray_new(res->balances, &ut_str_icd);
+    utarray_new(res->balances, &ut_uint64_icd);
     res->milestone = NULL;
   }
   return res;
@@ -31,19 +30,19 @@ void get_balances_res_free(get_balances_res_t** res) {
   *res = NULL;
 }
 
-char* get_balances_res_balances_at(get_balances_res_t const* const in,
-                                   int const index) {
-  char** p = (char**)utarray_eltptr(in->balances, index);
-  return *p;
+size_t get_balances_res_balances_num(get_balances_res_t const* const res) { return utarray_len(res->balances); }
+
+uint64_t get_balances_res_balances_at(get_balances_res_t const* const res, int const index) {
+  return *(uint64_t*)utarray_eltptr(res->balances, index);
 }
 
-size_t get_balances_res_total_balance(get_balances_res_t const* const res) {
-  size_t sum = 0;
-  size_t elm_count = utarray_len(res->balances);
-  for (int i = 0; i < elm_count; i++) {
-    char** p = (char**)utarray_eltptr(res->balances, i);
-    char* endptr;
-    sum += strtol(*p, &endptr, 10);
+retcode_t get_balances_res_balances_add(get_balances_res_t* const res, uint64_t value) {
+  if (!res->balances) {
+    utarray_new(res->balances, &ut_uint64_icd);
   }
-  return sum;
+  if (!res->balances) {
+    return RC_OOM;
+  }
+  utarray_push_back(res->balances, &value);
+  return RC_OK;
 }

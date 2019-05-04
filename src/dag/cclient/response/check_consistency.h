@@ -8,19 +8,20 @@
 #ifndef CCLIENT_RESPONSE_CHECK_CONSISTENCY_H
 #define CCLIENT_RESPONSE_CHECK_CONSISTENCY_H
 
-#include "types/types.h"
+#include "cclient/types/types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct {
+typedef struct check_consistency_res_s {
   bool state;
-  char_buffer_t* info;  // This field will only exist set if `state` is False.
+  char_buffer_t* info;  // This field will only be set if `state` is False.
 } check_consistency_res_t;
 
 check_consistency_res_t* check_consistency_res_new();
-void check_consistency_res_free(check_consistency_res_t* res);
+retcode_t check_consistency_res_info_set(check_consistency_res_t* res, const char* info);
+void check_consistency_res_free(check_consistency_res_t** res);
 
 #ifdef __cplusplus
 }

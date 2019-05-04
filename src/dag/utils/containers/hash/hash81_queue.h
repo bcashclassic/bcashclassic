@@ -31,7 +31,7 @@ retcode_t hash81_queue_push(hash81_queue_t *const queue,
 void hash81_queue_pop(hash81_queue_t *const queue);
 flex_trit_t *hash81_queue_peek(hash81_queue_t const queue);
 void hash81_queue_free(hash81_queue_t *const queue);
-size_t hash81_queue_count(hash81_queue_t *const queue);
+size_t hash81_queue_count(hash81_queue_t const queue);
 flex_trit_t *hash81_queue_at(hash81_queue_t *const queue, size_t index);
 
 #ifdef __cplusplus

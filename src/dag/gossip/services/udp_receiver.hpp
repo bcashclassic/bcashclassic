@@ -16,13 +16,11 @@ typedef struct receiver_service_s receiver_service_t;
 
 class UdpReceiverService {
  public:
-  UdpReceiverService(receiver_service_t* const service,
-                     boost::asio::io_context& context, uint16_t const port);
+  UdpReceiverService(receiver_service_t* const service, boost::asio::io_context& context, uint16_t const port);
   ~UdpReceiverService();
 
  public:
   void receive();
-  bool handlePacket(endpoint_t* const endpoint, std::size_t const length);
 
  private:
   receiver_service_t* service_;

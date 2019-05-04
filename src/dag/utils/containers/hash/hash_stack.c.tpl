@@ -15,7 +15,7 @@ retcode_t hash{SIZE}_stack_push(hash{SIZE}_stack_t *const stack,
                           flex_trit_t const *const hash) {
   hash{SIZE}_stack_entry_t *entry = NULL;
 
-  if ((entry = malloc(sizeof(hash{SIZE}_stack_entry_t))) == NULL) {
+  if ((entry = (hash{SIZE}_stack_entry_t *)malloc(sizeof(hash{SIZE}_stack_entry_t))) == NULL) {
     return RC_UTILS_OOM;
   }
   memcpy(entry->hash, hash, FLEX_TRIT_SIZE_{SIZE});
@@ -52,4 +52,16 @@ size_t hash{SIZE}_stack_count(hash{SIZE}_stack_t const stack) {
     curr = curr->next;
   }
   return count;
+}
+
+flex_trit_t *hash{SIZE}_stack_at(hash{SIZE}_stack_t const stack, size_t index) {
+  hash{SIZE}_stack_entry_t *iter = NULL;
+  size_t count = 0;
+  LL_FOREACH(stack, iter) {
+    if (count == index) {
+      return (flex_trit_t *)(iter->hash);
+    }
+    count++;
+  }
+  return NULL;
 }

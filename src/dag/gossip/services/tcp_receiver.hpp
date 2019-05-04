@@ -17,32 +17,26 @@ typedef struct neighbor_s neighbor_t;
 
 class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
  public:
-  TcpConnection(receiver_service_t* const service,
-                boost::asio::ip::tcp::socket socket);
+  TcpConnection(receiver_service_t* const service, boost::asio::ip::tcp::socket socket);
   ~TcpConnection();
 
  public:
-  void start();
-
- private:
-  void receive();
-  bool handlePacket(std::size_t const length);
+  void start(uint16_t const port);
 
  private:
   receiver_service_t* service_;
-  neighbor_t* neighbor_;
   boost::asio::ip::tcp::socket socket_;
-  iota_packet_t packet_;
+  std::string remote_host_;
+  uint16_t remote_port_;
 };
 
 class TcpReceiverService {
  public:
-  TcpReceiverService(receiver_service_t* const service,
-                     boost::asio::io_context& context, uint16_t const port);
+  TcpReceiverService(receiver_service_t* const service, boost::asio::io_context& context, uint16_t const port);
   ~TcpReceiverService();
 
  private:
-  void accept();
+  void accept(uint16_t const port);
 
  private:
   receiver_service_t* service_;

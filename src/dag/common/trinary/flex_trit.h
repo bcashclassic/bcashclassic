@@ -12,10 +12,8 @@ extern "C" {
 #ifndef __COMMON_TRINARY_FLEX_TRIT_H_
 #define __COMMON_TRINARY_FLEX_TRIT_H_
 
-#if !defined(FLEX_TRIT_ENCODING_1_TRIT_PER_BYTE) &&  \
-    !defined(FLEX_TRIT_ENCODING_3_TRITS_PER_BYTE) && \
-    !defined(FLEX_TRIT_ENCODING_4_TRITS_PER_BYTE) && \
-    !defined(FLEX_TRIT_ENCODING_5_TRITS_PER_BYTE)
+#if !defined(FLEX_TRIT_ENCODING_1_TRIT_PER_BYTE) && !defined(FLEX_TRIT_ENCODING_3_TRITS_PER_BYTE) && \
+    !defined(FLEX_TRIT_ENCODING_4_TRITS_PER_BYTE) && !defined(FLEX_TRIT_ENCODING_5_TRITS_PER_BYTE)
 #define FLEX_TRIT_ENCODING_1_TRIT_PER_BYTE
 #endif
 
@@ -71,13 +69,11 @@ typedef int8_t flex_trit_t;
 #if defined(FLEX_TRIT_ENCODING_1_TRIT_PER_BYTE)
 #define NUM_FLEX_TRITS_FOR_TRITS(num_trits) num_trits
 #elif defined(FLEX_TRIT_ENCODING_3_TRITS_PER_BYTE)
-#define NUM_FLEX_TRITS_FOR_TRITS(num_trits) \
-  ((num_trits + NUMBER_OF_TRITS_IN_A_TRYTE - 1) / NUMBER_OF_TRITS_IN_A_TRYTE)
+#define NUM_FLEX_TRITS_FOR_TRITS(num_trits) ((num_trits + NUMBER_OF_TRITS_IN_A_TRYTE - 1) / NUMBER_OF_TRITS_IN_A_TRYTE)
 #elif defined(FLEX_TRIT_ENCODING_4_TRITS_PER_BYTE)
 #define NUM_FLEX_TRITS_FOR_TRITS(num_trits) ((num_trits + 3) >> 2U)
 #elif defined(FLEX_TRIT_ENCODING_5_TRITS_PER_BYTE)
-#define NUM_FLEX_TRITS_FOR_TRITS(num_trits) \
-  ((num_trits + NUMBER_OF_TRITS_IN_A_BYTE - 1) / NUMBER_OF_TRITS_IN_A_BYTE)
+#define NUM_FLEX_TRITS_FOR_TRITS(num_trits) ((num_trits + NUMBER_OF_TRITS_IN_A_BYTE - 1) / NUMBER_OF_TRITS_IN_A_BYTE)
 #endif
 
 /// Returns the trit at a given index in an array of flex_trits
@@ -85,8 +81,7 @@ typedef int8_t flex_trit_t;
 /// @param[in] len - the number of trits encoded in the flex_trit array
 /// @param[in] index - the index of the trit to access
 /// @return trit_t - the trit at the given index
-static inline trit_t flex_trits_at(flex_trit_t const *const flex_trits,
-                                   size_t const len, size_t index) {
+static inline trit_t flex_trits_at(flex_trit_t const *const flex_trits, size_t const len, size_t index) {
   // Bounds checking
   if (index >= len) {
     return 0;
@@ -95,8 +90,7 @@ static inline trit_t flex_trits_at(flex_trit_t const *const flex_trits,
   // Straight forward 1 trit per byte
   return flex_trits[index];
 #elif defined(FLEX_TRIT_ENCODING_3_TRITS_PER_BYTE)
-  return get_trit_at((tryte_t *)flex_trits, NUM_FLEX_TRITS_FOR_TRITS(len),
-                     index);
+  return get_trit_at((tryte_t *)flex_trits, NUM_FLEX_TRITS_FOR_TRITS(len), index);
 #elif defined(FLEX_TRIT_ENCODING_4_TRITS_PER_BYTE)
   // Find out the position of the trit in the byte
   uint8_t mshift = (index & 3) << 1U;
@@ -122,9 +116,7 @@ static inline trit_t flex_trits_at(flex_trit_t const *const flex_trits,
 /// @param[in] len - the number of trits encoded in the flex_trit array
 /// @param[in] index - the index of the trit to access
 /// @param[in] trit - the trit value to set
-static inline uint8_t flex_trits_set_at(flex_trit_t *const flex_trits,
-                                        size_t const len, size_t index,
-                                        trit_t trit) {
+static inline uint8_t flex_trits_set_at(flex_trit_t *const flex_trits, size_t const len, size_t index, trit_t trit) {
   // Bounds checking
   if (index >= len) {
     return 0;
@@ -153,13 +145,13 @@ static inline uint8_t flex_trits_set_at(flex_trit_t *const flex_trits,
   index = index / 5U;
   byte_to_trits(*(flex_trits + index), trits, 5);
   trits[tindex] = trit;
-  flex_trits[index] = trits_to_byte(trits, 0, 5);
+  flex_trits[index] = trits_to_byte(trits, 5);
 #endif
   return 1;
 }
 
-static inline bool flex_trits_are_null(flex_trit_t const *const flex_trits,
-                                       size_t const len) {
+// return true if all flex_trit are NULL, else false.
+static inline bool flex_trits_are_null(flex_trit_t const *const flex_trits, size_t const len) {
   for (size_t i = 0; i < len; i++) {
     if (flex_trits[i] != FLEX_TRIT_NULL_VALUE) {
       return false;
@@ -177,9 +169,8 @@ static inline bool flex_trits_are_null(flex_trit_t const *const flex_trits,
 /// @param[in] start - the start index in the original array
 /// @param[in] num_trits - the number of trits to extract
 /// @return size_t - the number of trits extracted
-size_t flex_trits_slice(flex_trit_t *const to_flex_trits, size_t const to_len,
-                        flex_trit_t const *const flex_trits, size_t const len,
-                        size_t const start, size_t const num_trits);
+size_t flex_trits_slice(flex_trit_t *const to_flex_trits, size_t const to_len, flex_trit_t const *const flex_trits,
+                        size_t const len, size_t const start, size_t const num_trits);
 
 /// Inserts the contents of an array into another array starting at a given
 /// index.
@@ -187,12 +178,25 @@ size_t flex_trits_slice(flex_trit_t *const to_flex_trits, size_t const to_len,
 /// @param[in] to_len - the number of trits encoded in the to_flex_trits array
 /// @param[in] flex_trits - the array containing the trits to copy over
 /// @param[in] len - the number of trits the flex_trits array stores
-/// @param[in] start - the start index in the target array
+/// @param[in] start - the start index in the destination array
 /// @param[in] num_trits - the number of trits to copy over
 /// @return size_t - the number of trits copied over
-size_t flex_trits_insert(flex_trit_t *const to_flex_trits, size_t const to_len,
-                         flex_trit_t const *const flex_trits, size_t const len,
-                         size_t const start, size_t const num_trits);
+size_t flex_trits_insert(flex_trit_t *const to_flex_trits, size_t const to_len, flex_trit_t const *const flex_trits,
+                         size_t const len, size_t const start, size_t const num_trits);
+
+/// Inserts the contents of an array into another array starting at a given
+/// index.
+/// @param[in] dst_trits - the array to insert into
+/// @param[in] dst_len - the number of trits encoded in the to_flex_trits array
+/// @param[in] src_trits - the array containing the trits to copy over
+/// @param[in] src_len - the number of trits the flex_trits array stores
+/// @param[in] src_start_pos - the start index on the source array
+/// @param[in] dst_start_pos - the start index on the destination array
+/// @param[in] num_trits - the number of trits to copy over
+/// @return size_t - the number of trits copied over
+size_t flex_trits_insert_from_pos(flex_trit_t *const dst_trits, size_t const dst_len,
+                                  flex_trit_t const *const src_trits, size_t const src_len, size_t const src_start_pos,
+                                  size_t const dst_start_pos, size_t const num_trits);
 
 /// Returns an array of trits regardless of the current memory storage
 /// scheme
@@ -202,8 +206,7 @@ size_t flex_trits_insert(flex_trit_t *const to_flex_trits, size_t const to_len,
 /// @param[in] len - the number of trits the flex_trits array stores
 /// @param[in] num_trits - the number of trits to extract
 /// @return size_t - the number of trits encoded
-size_t flex_trits_to_trits(trit_t *const trits, size_t const to_len,
-                           flex_trit_t const *const flex_trits,
+size_t flex_trits_to_trits(trit_t *const trits, size_t const to_len, flex_trit_t const *const flex_trits,
                            size_t const len, size_t const num_trits);
 
 /// Returns an array of trits packed in the current memory storage scheme
@@ -213,8 +216,7 @@ size_t flex_trits_to_trits(trit_t *const trits, size_t const to_len,
 /// @param[in] len - the number of trits the trits array contains
 /// @param[in] num_trits - the number of trits to pack
 /// @return size_t - the number of trits decoded
-size_t flex_trits_from_trits(flex_trit_t *const to_flex_trits,
-                             size_t const to_len, trit_t const *const trits,
+size_t flex_trits_from_trits(flex_trit_t *const to_flex_trits, size_t const to_len, trit_t const *const trits,
                              size_t const len, size_t const num_trits);
 
 /// Returns an array of trytes.
@@ -224,8 +226,7 @@ size_t flex_trits_from_trits(flex_trit_t *const to_flex_trits,
 /// @param[in] len - the number of trits the flex_trits array contains
 /// @param[in] num_trits - the number of trits to pack
 /// @return size_t - the number of trits encoded
-size_t flex_trits_to_trytes(tryte_t *trytes, size_t to_len,
-                            const flex_trit_t *flex_trits, size_t len,
+size_t flex_trits_to_trytes(tryte_t *trytes, size_t to_len, const flex_trit_t *flex_trits, size_t len,
                             size_t num_trits);
 
 /// Returns an array of flex_trits.
@@ -235,8 +236,7 @@ size_t flex_trits_to_trytes(tryte_t *trytes, size_t to_len,
 /// @param[in] len - the number of trytes in the trytes array
 /// @param[in] num_trytes - the size of trytes to unpack
 /// @return size_t - the number of trytes decoded
-size_t flex_trits_from_trytes(flex_trit_t *to_flex_trits, size_t to_len,
-                              const tryte_t *trytes, size_t len,
+size_t flex_trits_from_trytes(flex_trit_t *to_flex_trits, size_t to_len, const tryte_t *trytes, size_t len,
                               size_t num_trytes);
 
 /// Returns an array of bytes.
@@ -246,9 +246,7 @@ size_t flex_trits_from_trytes(flex_trit_t *to_flex_trits, size_t to_len,
 /// @param[in] len - the number of trits the flex_trits array contains
 /// @param[in] num_trits - the number of trits to pack
 /// @return size_t - the number of trits encoded
-size_t flex_trits_to_bytes(byte_t *bytes, size_t to_len,
-                           const flex_trit_t *flex_trits, size_t len,
-                           size_t num_trits);
+size_t flex_trits_to_bytes(byte_t *bytes, size_t to_len, const flex_trit_t *flex_trits, size_t len, size_t num_trits);
 
 /// Returns an array of flex_trits.
 /// @param[in] to_flex_trits - the array of packed trits
@@ -257,8 +255,8 @@ size_t flex_trits_to_bytes(byte_t *bytes, size_t to_len,
 /// @param[in] len - the number of trits in the bytes array
 /// @param[in] num_trits - the number of trits to unpack
 /// @return size_t - the number of trits decoded
-size_t flex_trits_from_bytes(flex_trit_t *to_flex_trits, size_t to_len,
-                             const byte_t *bytes, size_t len, size_t num_trits);
+size_t flex_trits_from_bytes(flex_trit_t *to_flex_trits, size_t to_len, const byte_t *bytes, size_t len,
+                             size_t num_trits);
 
 #endif
 #ifdef __cplusplus

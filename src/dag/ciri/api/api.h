@@ -11,13 +11,20 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "cclient/serialization/serializer.h"
+#include "cclient/request/requests.h"
+#include "cclient/response/responses.h"
 #include "ciri/api/conf.h"
+#include "ciri/core.h"
 #include "common/errors.h"
-#include "consensus/tangle/tangle.h"
-#include "consensus/transaction_validator/transaction_validator.h"
+#include "consensus/consensus.h"
 #include "gossip/components/broadcaster.h"
 #include "utils/handles/thread.h"
+
+#define API_TAILS_NOT_SOLID "tails are not solid (missing a referenced tx)"
+#define API_TAILS_BUNDLE_INVALID "tails are not consistent (bundle is invalid)"
+#define API_TAILS_NOT_CONSISTENT                                          \
+  "tails are not consistent (would lead to inconsistent ledger state or " \
+  "below max depth)"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,13 +36,7 @@ extern "C" {
  */
 typedef struct iota_api_s {
   iota_api_conf_t conf;
-  thread_handle_t thread;
-  bool running;
-  node_t *node;
-  tangle_t *tangle;
-  transaction_validator_t *transaction_validator;
-  serializer_t serializer;
-  serializer_type_t serializer_type;
+  core_t *core;
 } iota_api_t;
 
 /**
@@ -43,34 +44,11 @@ typedef struct iota_api_s {
  *
  * @param api The API
  * @param node A node
- * @param tangle A tangle
- * @param transaction_validator A transaction validator
- * @param serializer_type A serializer type
+ * @param consensus A consensus
  *
  * @return a status code
  */
-retcode_t iota_api_init(iota_api_t *const api, node_t *const node,
-                        tangle_t *const tangle,
-                        transaction_validator_t *const transaction_validator,
-                        serializer_type_t const serializer_type);
-
-/**
- * Starts an API
- *
- * @param api The API
- *
- * @return a status code
- */
-retcode_t iota_api_start(iota_api_t *const api);
-
-/**
- * Stops an API
- *
- * @param api The API
- *
- * @return a status code
- */
-retcode_t iota_api_stop(iota_api_t *const api);
+retcode_t iota_api_init(iota_api_t *const api, core_t *const core);
 
 /**
  * Destroys an API
@@ -89,8 +67,7 @@ retcode_t iota_api_destroy(iota_api_t *const api);
  *
  * @return a status code
  */
-retcode_t iota_api_get_node_info(iota_api_t const *const api,
-                                 get_node_info_res_t *const res);
+retcode_t iota_api_get_node_info(iota_api_t const *const api, get_node_info_res_t *const res);
 
 /**
  * Returns the set of neighbors you are connected with, as well as their
@@ -101,8 +78,7 @@ retcode_t iota_api_get_node_info(iota_api_t const *const api,
  *
  * @return a status code
  */
-retcode_t iota_api_get_neighbors(iota_api_t const *const api,
-                                 get_neighbors_res_t *const res);
+retcode_t iota_api_get_neighbors(iota_api_t const *const api, get_neighbors_res_t *const res);
 
 /**
  * Adds a list of neighbors to your node. It should be noted that this is only
@@ -115,8 +91,7 @@ retcode_t iota_api_get_neighbors(iota_api_t const *const api,
  *
  * @return a status code
  */
-retcode_t iota_api_add_neighbors(iota_api_t const *const api,
-                                 add_neighbors_req_t const *const req,
+retcode_t iota_api_add_neighbors(iota_api_t const *const api, add_neighbors_req_t const *const req,
                                  add_neighbors_res_t *const res);
 
 /**
@@ -130,8 +105,7 @@ retcode_t iota_api_add_neighbors(iota_api_t const *const api,
  *
  * @return a status code
  */
-retcode_t iota_api_remove_neighbors(iota_api_t const *const api,
-                                    remove_neighbors_req_t const *const req,
+retcode_t iota_api_remove_neighbors(iota_api_t const *const api, remove_neighbors_req_t const *const req,
                                     remove_neighbors_res_t *const res);
 
 /**
@@ -142,8 +116,7 @@ retcode_t iota_api_remove_neighbors(iota_api_t const *const api,
  *
  * @return a status code
  */
-retcode_t iota_api_get_tips(iota_api_t const *const api,
-                            get_tips_res_t *const res);
+retcode_t iota_api_get_tips(iota_api_t const *const api, get_tips_res_t *const res);
 
 /**
  * Finds the transactions which match the specified input and return. All input
@@ -153,14 +126,14 @@ retcode_t iota_api_get_tips(iota_api_t const *const api,
  * input fields returns the intersection of the values.
  *
  * @param api The API
+ * @param tangle A tangle
  * @param req The request
  * @param res The response
  *
  * @return a status code
  */
-retcode_t iota_api_find_transactions(iota_api_t const *const api,
-                                     find_transactions_req_t const *const req,
-                                     find_transactions_res_t *const res);
+retcode_t iota_api_find_transactions(iota_api_t const *const api, tangle_t *const tangle,
+                                     find_transactions_req_t const *const req, find_transactions_res_t *const res);
 
 /**
  * Returns the raw transaction data (trytes) of a specific transaction. These
@@ -168,13 +141,13 @@ retcode_t iota_api_find_transactions(iota_api_t const *const api,
  * utility functions for more details.
  *
  * @param api The API
+ * @param tangle A tangle
  * @param req The request
  * @param res The response
  *
  * @return a status code
  */
-retcode_t iota_api_get_trytes(iota_api_t const *const api,
-                              get_trytes_req_t const *const req,
+retcode_t iota_api_get_trytes(iota_api_t const *const api, tangle_t *const tangle, get_trytes_req_t const *const req,
                               get_trytes_res_t *const res);
 
 /**
@@ -191,9 +164,8 @@ retcode_t iota_api_get_trytes(iota_api_t const *const api,
  *
  * @return a status code
  */
-retcode_t iota_api_get_inclusion_states(
-    iota_api_t const *const api, get_inclusion_state_req_t const *const req,
-    get_inclusion_state_res_t *const res);
+retcode_t iota_api_get_inclusion_states(iota_api_t const *const api, get_inclusion_states_req_t const *const req,
+                                        get_inclusion_states_res_t *const res);
 
 /**
  * Returns the confirmed balance, as viewed by tips, in case tips is not
@@ -208,8 +180,7 @@ retcode_t iota_api_get_inclusion_states(
  *
  * @return a status code
  */
-retcode_t iota_api_get_balances(iota_api_t const *const api,
-                                get_balances_req_t const *const req,
+retcode_t iota_api_get_balances(iota_api_t const *const api, get_balances_req_t const *const req,
                                 get_balances_res_t *const res);
 
 /**
@@ -223,15 +194,15 @@ retcode_t iota_api_get_balances(iota_api_t const *const api,
  * returned.
  *
  * @param api The API
+ * @param tangle A tangle
  * @param req The request
  * @param res The response
  *
  * @return a status code
  */
-retcode_t iota_api_get_transactions_to_approve(
-    iota_api_t const *const api,
-    get_transactions_to_approve_req_t const *const req,
-    get_transactions_to_approve_res_t *const res);
+retcode_t iota_api_get_transactions_to_approve(iota_api_t const *const api, tangle_t *const tangle,
+                                               get_transactions_to_approve_req_t const *const req,
+                                               get_transactions_to_approve_res_t *const res);
 
 /**
  * Attaches the specified transactions (trytes) to the Tangle by doing Proof of
@@ -250,8 +221,7 @@ retcode_t iota_api_get_transactions_to_approve(
  *
  * @return a status code
  */
-retcode_t iota_api_attach_to_tangle(iota_api_t const *const api,
-                                    attach_to_tangle_req_t const *const req,
+retcode_t iota_api_attach_to_tangle(iota_api_t const *const api, attach_to_tangle_req_t const *const req,
                                     attach_to_tangle_res_t *const res);
 
 /**
@@ -272,20 +242,20 @@ retcode_t iota_api_interrupt_attaching_to_tangle(iota_api_t const *const api);
  *
  * @return a status code
  */
-retcode_t iota_api_broadcast_transactions(
-    iota_api_t const *const api, broadcast_transactions_req_t const *const req);
+retcode_t iota_api_broadcast_transactions(iota_api_t const *const api, broadcast_transactions_req_t const *const req);
 
 /**
  * Stores transactions into the local storage. The trytes to be used for this
  * call are returned by attachToTangle.
  *
  * @param api The API
+ * @param tangle A tangle
  * @param req The request
  *
  * @return a status code
  */
-retcode_t iota_api_store_transactions(
-    iota_api_t const *const api, store_transactions_req_t const *const req);
+retcode_t iota_api_store_transactions(iota_api_t const *const api, tangle_t *const tangle,
+                                      store_transactions_req_t const *const req);
 
 /**
  * Checks if a list of addresses was ever spent from, in the current epoch, or
@@ -297,13 +267,29 @@ retcode_t iota_api_store_transactions(
  *
  * @return a status code
  */
-retcode_t iota_api_were_addresses_spent_from(
-    iota_api_t const *const api, check_consistency_req_t const *const req,
-    check_consistency_res_t *const res);
+retcode_t iota_api_were_addresses_spent_from(iota_api_t const *const api, check_consistency_req_t const *const req,
+                                             check_consistency_res_t *const res);
 
-retcode_t iota_api_check_consistency(iota_api_t const *const api,
-                                     check_consistency_req_t const *const req,
-                                     check_consistency_res_t *const res);
+/**
+ * Checks consistency of transactions.
+ * Error is returned if:
+ * - Transaction does not exist
+ * - Transaction is not a tail
+ * False is returned if:
+ * - Tails are not solid
+ * - Tails bundles are not valid
+ * - Tails would lead to inconsistent ledger
+ * True is returned otherwise
+ *
+ * @param api The API
+ * @param tangle A tangle
+ * @param req The request
+ * @param res The response
+ *
+ * @return a status code
+ */
+retcode_t iota_api_check_consistency(iota_api_t const *const api, tangle_t *const tangle,
+                                     check_consistency_req_t const *const req, check_consistency_res_t *const res);
 
 #ifdef __cplusplus
 }

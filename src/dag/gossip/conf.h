@@ -13,11 +13,11 @@
 #include "common/errors.h"
 #include "common/trinary/trit_byte.h"
 
-#define REQUEST_HASH_SIZE 46
-#define MWM 14
-
+#define REQUEST_HASH_SIZE 46  //add by ck
 #define PACKET_TX_SIZE 1604
 #define PACKET_SIZE (PACKET_TX_SIZE + REQUEST_HASH_SIZE)
+
+#define MWM 14
 
 #define DEFAULT_UDP_RECEIVER_PORT 14600
 #define DEFAULT_TCP_RECEIVER_PORT 15600
@@ -29,6 +29,8 @@
 #define DEFAULT_PROBABILITY_SELECT_MILESTONE 0.7
 #define DEFAULT_PROBABILITY_SEND_MILESTONE 0.02
 #define DEFAULT_TIPS_CACHE_SIZE 5000
+#define DEFAULT_REQUESTER_QUEUE_SIZE 10000
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -65,6 +67,10 @@ typedef struct iota_gossip_conf_s {
   double p_send_milestone;
   // Size of the tips cache
   size_t tips_cache_size;
+  // Size of the requester queue
+  size_t requester_queue_size;
+  // Path of the DB file
+  char db_path[128];
 } iota_gossip_conf_t;
 
 /**

@@ -8,7 +8,7 @@
 #ifndef CCLIENT_REQUEST_BROADCAST_TRANSACTIONS_H
 #define CCLIENT_REQUEST_BROADCAST_TRANSACTIONS_H
 
-#include "types/types.h"
+#include "cclient/types/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,13 +16,15 @@ extern "C" {
 
 typedef struct broadcast_transactions_req_s {
   // List of raw transactions data to be broadcasted
-  flex_hash_array_t* trytes;
+  hash8019_array_p trytes;
 } broadcast_transactions_req_t;
 
 broadcast_transactions_req_t* broadcast_transactions_req_new();
 void broadcast_transactions_req_free(broadcast_transactions_req_t** const req);
-broadcast_transactions_req_t* broadcast_transactions_req_add_trytes(
-    broadcast_transactions_req_t* const res, tryte_t const* const trytes);
+// add trytes to array
+retcode_t broadcast_transactions_req_trytes_add(broadcast_transactions_req_t* req, flex_trit_t const* const raw_trytes);
+// get trytes from array.
+flex_trit_t* broadcat_transactions_req_trytes_get(broadcast_transactions_req_t* req, size_t index);
 
 #ifdef __cplusplus
 }

@@ -11,7 +11,6 @@
 #include <stdbool.h>
 
 #include "common/errors.h"
-#include "consensus/transaction_solidifier/transaction_solidifier.h"
 #include "consensus/transaction_validator/transaction_validator.h"
 #include "gossip/iota_packet.h"
 #include "utils/handles/cond.h"
@@ -22,6 +21,8 @@
 // Forward declarations
 typedef struct node_s node_t;
 typedef struct tangle_s tangle_t;
+typedef struct transaction_solidifier_s transaction_solidifier_t;
+typedef struct milestone_tracker_s milestone_tracker_t;
 
 /**
  * A processor is responsible for analyzing packets sent by neighbors.
@@ -33,9 +34,9 @@ typedef struct processor_s {
   rw_lock_handle_t lock;
   cond_handle_t cond;
   node_t *node;
-  tangle_t *tangle;
   transaction_validator_t *transaction_validator;
   transaction_solidifier_t *transaction_solidifier;
+  milestone_tracker_t *milestone_tracker;
 } processor_t;
 
 #ifdef __cplusplus
@@ -47,16 +48,16 @@ extern "C" {
  *
  * @param processor The processor state
  * @param node A node
- * @param tangle A tangle
  * @param transaction_validator A transaction validator
  * @param transaction_solidifier A transaction solidifier
+ * @param milestone_tracker A milestone tracker
  *
  * @return a status code
  */
-retcode_t processor_init(
-    processor_t *const processor, node_t *const node, tangle_t *const tangle,
-    transaction_validator_t *const transaction_validator,
-    transaction_solidifier_t *const transaction_solidifier);
+retcode_t processor_init(processor_t *const processor, node_t *const node,
+                         transaction_validator_t *const transaction_validator,
+                         transaction_solidifier_t *const transaction_solidifier,
+                         milestone_tracker_t *const milestone_tracker);
 
 /**
  * Starts a processor
@@ -93,8 +94,7 @@ retcode_t processor_destroy(processor_t *const processor);
  *
  * @return a status code
  */
-retcode_t processor_on_next(processor_t *const processor,
-                            iota_packet_t const packet);
+retcode_t processor_on_next(processor_t *const processor, iota_packet_t const packet);
 
 /**
  * Gets the size of the processor queue
@@ -104,6 +104,15 @@ retcode_t processor_on_next(processor_t *const processor,
  * @return a status code
  */
 size_t processor_size(processor_t *const processor);
+
+/**
+ * Tells whether the processor queue is empty or not
+ *
+ * @param processor The processor
+ *
+ * @return true if empty, false otherwise
+ */
+static inline bool processor_is_empty(processor_t *const processor) { return processor->queue == NULL; }
 
 #ifdef __cplusplus
 }

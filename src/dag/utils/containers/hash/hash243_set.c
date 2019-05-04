@@ -17,7 +17,7 @@ retcode_t hash243_set_add(hash243_set_t *const set,
   hash243_set_entry_t *entry = NULL;
 
   if (!hash243_set_contains(set, hash)) {
-    if ((entry = malloc(sizeof(hash243_set_entry_t))) == NULL) {
+    if ((entry = (hash243_set_entry_t *)malloc(sizeof(hash243_set_entry_t))) == NULL) {
       return RC_UTILS_OOM;
     }
     memcpy(entry->hash, hash, FLEX_TRIT_SIZE_243);
@@ -69,6 +69,21 @@ bool hash243_set_contains(hash243_set_t const *const set,
 
   HASH_FIND(hh, *set, hash, FLEX_TRIT_SIZE_243, entry);
   return entry != NULL;
+}
+
+bool hash243_set_find(hash243_set_t const *const set,
+        flex_trit_t const *const hash, hash243_set_entry_t const ** entry){
+if (*set == NULL) {
+return false;
+}
+
+if (entry == NULL){
+  return RC_NULL_PARAM;
+}
+
+HASH_FIND(hh, *set, hash, FLEX_TRIT_SIZE_243, *entry);
+return *entry != NULL;
+
 }
 
 void hash243_set_free(hash243_set_t *const set) {

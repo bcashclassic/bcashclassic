@@ -11,6 +11,10 @@ const char* error_2_string(retcode_t err) {
   switch (err) {
     case RC_OK:
       return STR_OK;
+    case RC_ERROR:
+      return STR_ERROR;
+    case RC_NULL_PARAM:
+      return STR_NULL_PARAM;
 
     // Storage SQLite3 Module
     case RC_STORAGE_OOM:
@@ -104,6 +108,18 @@ const char* error_2_string(retcode_t err) {
       return STR_CCLIENT_UNIMPLEMENTED;
     case RC_CCLIENT_INVALID_SECURITY:
       return STR_CCLIENT_INVALID_SECURITY;
+    case RC_CCLIENT_TX_DESERIALIZE_FAILED:
+      return STR_CCLIENT_TX_DESERIALIZE_FAILED;
+    case RC_CCLIENT_INSUFFICIENT_BALANCE:
+      return STR_CCLIENT_INSUFFICIENT_BALANCE;
+    case RC_CCLIENT_POW_FAILED:
+      return STR_CCLIENT_POW_FAILED;
+    case RC_CCLIENT_INVALID_TRANSFER:
+      return SRT_CCLIENT_INVALID_TRANSFER;
+    case RC_CCLIENT_INVALID_TAIL_HASH:
+      return STR_CCLIENT_INVALID_TAIL_HASH;
+    case RC_CCLIENT_INVALID_BUNDLE:
+      return SRT_CCLIENT_INVALID_BUNDLE;
 
     // Consensus module
     case RC_CONSENSUS_NOT_IMPLEMENTED:
@@ -115,6 +131,30 @@ const char* error_2_string(retcode_t err) {
     // Utils module
     case RC_UTILS_FAILED_REMOVE_FILE:
     case RC_UTILS_FAILED_TO_COPY_FILE:
+      return "String not defined.";
+    case RC_UTILS_SOCKET_TLS_RNG:
+      return STR_UTILS_SOCKET_TLS_RNG;
+    case RC_UTILS_SOCKET_TLS_CA:
+      return STR_UTILS_SOCKET_TLS_CA;
+    case RC_UTILS_SOCKET_TLS_CLIENT_PEM:
+      return STR_UTILS_SOCKET_TLS_CLIENT_PEM;
+    case RC_UTILS_SOCKET_TLS_CLIENT_PK:
+      return STR_UTILS_SOCKET_TLS_CLIENT_PK;
+    case RC_UTILS_SOCKET_TLS_CONF:
+      return STR_UTILS_SOCKET_TLS_CONF;
+    case RC_UTILS_SOCKET_TLS_AUTHMODE:
+      return STR_UTILS_SOCKET_TLS_AUTHMODE;
+    case RC_UTILS_SOCKET_CLIENT_AUTH:
+      return STR_UTILS_SOCKET_CLIENT_AUTH;
+    case RC_UTILS_SOCKET_TLS_HANDSHAKE:
+      return STR_UTILS_SOCKET_TLS_HANDSHAKE;
+    case RC_UTILS_SOCKET_CONNECT:
+      return STR_UTILS_SOCKET_CONNECT;
+    case RC_UTILS_SOCKET_RECV:
+      return STR_UTILS_SOCKET_RECV;
+    case RC_UTILS_SOCKET_SEND:
+      return STR_UTILS_SOCKET_SEND;
+
     // Broadcaster module
     case RC_BROADCASTER_FAILED_PUSH_QUEUE:
     case RC_BROADCASTER_STILL_RUNNING:
@@ -142,11 +182,6 @@ const char* error_2_string(retcode_t err) {
     // Conf Module
     case RC_CIRI_CONF_NULL_CONF:
     case RC_CIRI_CONF_INVALID_ARGUMENTS:
-    // Conf Module
-    case RC_API_NULL_SELF:
-    case RC_API_FAILED_THREAD_SPAWN:
-    case RC_API_FAILED_THREAD_JOIN:
-    case RC_API_STILL_RUNNING:
     // Snapshot Module
     case RC_SNAPSHOT_NULL_SELF:
     case RC_SNAPSHOT_NULL_STATE:

@@ -8,7 +8,7 @@
 #ifndef CCLIENT_REQUEST_STORE_TRANSACTIONS_H
 #define CCLIENT_REQUEST_STORE_TRANSACTIONS_H
 
-#include "types/types.h"
+#include "cclient/types/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,13 +16,13 @@ extern "C" {
 
 typedef struct store_transactions_req_s {
   // List of raw transactions data to be stored
-  flex_hash_array_t* trytes;
+  hash8019_array_p trytes;
 } store_transactions_req_t;
 
 store_transactions_req_t* store_transactions_req_new();
 void store_transactions_req_free(store_transactions_req_t** const req);
-store_transactions_req_t* store_transactions_req_add_trytes(
-    store_transactions_req_t* const req, tryte_t const* const trytes);
+retcode_t store_transactions_req_trytes_add(store_transactions_req_t* req, flex_trit_t const* const raw_trytes);
+flex_trit_t* store_transactions_req_trytes_get(store_transactions_req_t* req, size_t index);
 
 #ifdef __cplusplus
 }

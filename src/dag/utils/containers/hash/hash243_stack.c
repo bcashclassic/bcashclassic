@@ -15,7 +15,7 @@ retcode_t hash243_stack_push(hash243_stack_t *const stack,
                           flex_trit_t const *const hash) {
   hash243_stack_entry_t *entry = NULL;
 
-  if ((entry = malloc(sizeof(hash243_stack_entry_t))) == NULL) {
+  if ((entry = (hash243_stack_entry_t *)malloc(sizeof(hash243_stack_entry_t))) == NULL) {
     return RC_UTILS_OOM;
   }
   memcpy(entry->hash, hash, FLEX_TRIT_SIZE_243);
@@ -52,4 +52,16 @@ size_t hash243_stack_count(hash243_stack_t const stack) {
     curr = curr->next;
   }
   return count;
+}
+
+flex_trit_t *hash243_stack_at(hash243_stack_t const stack, size_t index) {
+  hash243_stack_entry_t *iter = NULL;
+  size_t count = 0;
+  LL_FOREACH(stack, iter) {
+    if (count == index) {
+      return (flex_trit_t *)(iter->hash);
+    }
+    count++;
+  }
+  return NULL;
 }

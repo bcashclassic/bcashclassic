@@ -28,6 +28,9 @@ extern "C" {
 /** Preprocessor string conversion helper */
 #define LOGGER_STRINGIFY(x)     LOGGER_STRINGIFY_(x)
 
+// enable logger
+#define LOGGER_ENABLE 1
+
 /** Deprecation macro */
 #if __GNUC__
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)

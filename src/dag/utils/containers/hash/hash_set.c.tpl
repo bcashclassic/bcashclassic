@@ -17,7 +17,7 @@ retcode_t hash{SIZE}_set_add(hash{SIZE}_set_t *const set,
   hash{SIZE}_set_entry_t *entry = NULL;
 
   if (!hash{SIZE}_set_contains(set, hash)) {
-    if ((entry = malloc(sizeof(hash{SIZE}_set_entry_t))) == NULL) {
+    if ((entry = (hash{SIZE}_set_entry_t *)malloc(sizeof(hash{SIZE}_set_entry_t))) == NULL) {
       return RC_UTILS_OOM;
     }
     memcpy(entry->hash, hash, FLEX_TRIT_SIZE_{SIZE});
@@ -69,6 +69,21 @@ bool hash{SIZE}_set_contains(hash{SIZE}_set_t const *const set,
 
   HASH_FIND(hh, *set, hash, FLEX_TRIT_SIZE_{SIZE}, entry);
   return entry != NULL;
+}
+
+bool hash{SIZE}_set_find(hash{SIZE}_set_t const *const set,
+        flex_trit_t const *const hash, hash{SIZE}_set_entry_t const ** entry){
+if (*set == NULL) {
+return false;
+}
+
+if (entry == NULL){
+  return RC_NULL_PARAM;
+}
+
+HASH_FIND(hh, *set, hash, FLEX_TRIT_SIZE_{SIZE}, *entry);
+return *entry != NULL;
+
 }
 
 void hash{SIZE}_set_free(hash{SIZE}_set_t *const set) {

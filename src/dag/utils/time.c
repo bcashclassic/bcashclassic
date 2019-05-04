@@ -6,7 +6,7 @@
  */
 
 #if !defined(_WIN32) && defined(__unix__) || defined(__unix) || \
-    (defined(__APPLE__) && defined(__MACH__))
+    (defined(__APPLE__) && defined(__MACH__) || defined(__XTENSA__))
 #include <sys/time.h>
 #if _POSIX_C_SOURCE >= 199309L
 #include <time.h>  // for nanosleep
@@ -20,15 +20,23 @@
 #include "utils/time.h"
 
 uint64_t current_timestamp_ms() {
-  struct timeval tv;
+#ifdef _WIN32
+  SYSTEMTIME time;
+
+  GetSystemTime(&time);
+  LONG ms = (time.wSecond * 1000) + time.wMilliseconds;
+  return ms;
+#else
+  struct timeval tv = {0};
 
   gettimeofday(&tv, NULL);
   uint64_t ms = tv.tv_sec * 1000ULL + tv.tv_usec / 1000ULL;
   return ms;
+#endif
 }
 
 void sleep_ms(uint64_t milliseconds) {
-#ifdef WIN32
+#ifdef _WIN32
   Sleep(milliseconds);
 #elif _POSIX_C_SOURCE >= 199309L
   struct timespec ts;

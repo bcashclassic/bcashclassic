@@ -31,6 +31,7 @@ void hash243_stack_pop(hash243_stack_t *const stack);
 flex_trit_t *hash243_stack_peek(hash243_stack_t const stack);
 void hash243_stack_free(hash243_stack_t *const stack);
 size_t hash243_stack_count(hash243_stack_t const stack);
+flex_trit_t *hash243_stack_at(hash243_stack_t const stack, size_t index);
 
 #ifdef __cplusplus
 }

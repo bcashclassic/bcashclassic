@@ -15,7 +15,7 @@ retcode_t hash8019_queue_push(hash8019_queue_t *const queue,
                           flex_trit_t const *const hash) {
   hash8019_queue_entry_t *entry = NULL;
 
-  if ((entry = malloc(sizeof(hash8019_queue_entry_t))) == NULL) {
+  if ((entry = (hash8019_queue_entry_t *)malloc(sizeof(hash8019_queue_entry_t))) == NULL) {
     return RC_UTILS_OOM;
   }
   memcpy(entry->hash, hash, FLEX_TRIT_SIZE_8019);
@@ -49,10 +49,10 @@ void hash8019_queue_free(hash8019_queue_t *const queue) {
   }
 }
 
-size_t hash8019_queue_count(hash8019_queue_t *const queue) {
+size_t hash8019_queue_count(hash8019_queue_t const queue) {
   hash8019_queue_entry_t *iter = NULL;
   size_t count = 0;
-  CDL_COUNT(*queue, iter, count);
+  CDL_COUNT(queue, iter, count);
   return count;
 }
 

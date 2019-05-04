@@ -38,6 +38,8 @@ retcode_t hash243_set_append(hash243_set_t const *const set1,
                                hash243_set_t *const set2);
 bool hash243_set_contains(hash243_set_t const *const set,
                             flex_trit_t const *const hash);
+bool hash243_set_find(hash243_set_t const *const set,
+        flex_trit_t const *const hash, hash243_set_entry_t const ** entry);
 void hash243_set_free(hash243_set_t *const set);
 retcode_t hash243_set_for_each(hash243_set_t const *const set,
                                  hash243_on_container_func func,

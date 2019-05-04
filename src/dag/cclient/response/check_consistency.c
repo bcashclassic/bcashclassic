@@ -5,19 +5,39 @@
  * Refer to the LICENSE file for licensing information
  */
 
-#include "response/check_consistency.h"
+#include "cclient/response/check_consistency.h"
 
 check_consistency_res_t* check_consistency_res_new() {
-  check_consistency_res_t* res =
-      (check_consistency_res_t*)malloc(sizeof(check_consistency_res_t));
+  check_consistency_res_t* res = (check_consistency_res_t*)malloc(sizeof(check_consistency_res_t));
 
-  res->info = char_buffer_new();
+  if (res) {
+    res->info = NULL;
+  }
   return res;
 }
 
-void check_consistency_res_free(check_consistency_res_t* res) {
-  if (res) {
-    char_buffer_free(res->info);
-    free(res);
+retcode_t check_consistency_res_info_set(check_consistency_res_t* res, const char* info) {
+  if (!res->info) {
+    res->info = char_buffer_new();
   }
+
+  if (!res->info) {
+    return RC_OOM;
+  }
+
+  char_buffer_set(res->info, info);
+  return RC_OK;
+}
+
+void check_consistency_res_free(check_consistency_res_t** res) {
+  if (!res || !(*res)) {
+    return;
+  }
+
+  if ((*res)->info) {
+    char_buffer_free((*res)->info);
+  }
+
+  free(*res);
+  *res = NULL;
 }

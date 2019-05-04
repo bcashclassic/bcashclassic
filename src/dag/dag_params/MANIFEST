@@ -1,0 +1,12 @@
+org_iota_entangled/ciri/ciri /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/execroot/org_iota_entangled/bazel-out/k8-dbg/bin/ciri/ciri
+org_iota_entangled/ciri/db/ciri-mainnet.db /data/bch/entangled-new-clone/entangled/ciri/db/ciri-mainnet.db
+org_iota_entangled/external/snapshot_conf_mainnet/file/snapshot.json /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_conf_mainnet/file/snapshot.json
+org_iota_entangled/external/snapshot_conf_testnet/file/snapshot.json /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_conf_testnet/file/snapshot.json
+org_iota_entangled/external/snapshot_mainnet/file/snapshot.txt /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_mainnet/file/snapshot.txt
+org_iota_entangled/external/snapshot_sig_mainnet/file/snapshot.sig /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_sig_mainnet/file/snapshot.sig
+org_iota_entangled/external/snapshot_testnet/file/snapshot.txt /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_testnet/file/snapshot.txt
+snapshot_conf_mainnet/file/snapshot.json /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_conf_mainnet/file/snapshot.json
+snapshot_conf_testnet/file/snapshot.json /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_conf_testnet/file/snapshot.json
+snapshot_mainnet/file/snapshot.txt /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_mainnet/file/snapshot.txt
+snapshot_sig_mainnet/file/snapshot.sig /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_sig_mainnet/file/snapshot.sig
+snapshot_testnet/file/snapshot.txt /home/yang/.cache/bazel/_bazel_yang/dc7da1981c3696f3afe8a8f74dedfc0c/external/snapshot_testnet/file/snapshot.txt

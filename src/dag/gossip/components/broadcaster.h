@@ -13,7 +13,6 @@
 #include "common/errors.h"
 #include "utils/containers/hash/hash8019_queue.h"
 #include "utils/handles/cond.h"
-#include "utils/handles/lock.h"
 #include "utils/handles/rw_lock.h"
 #include "utils/handles/thread.h"
 
@@ -41,8 +40,7 @@ extern "C" {
  *
  * @return a status code
  */
-retcode_t broadcaster_init(broadcaster_t *const broadcaster,
-                           node_t *const node);
+retcode_t broadcaster_init(broadcaster_t *const broadcaster, node_t *const node);
 
 /**
  * Destroys a broadcaster
@@ -70,8 +68,7 @@ retcode_t broadcaster_start(broadcaster_t *const broadcaster);
  *
  * @return a status code
  */
-retcode_t broadcaster_on_next(broadcaster_t *const broadcaster,
-                              flex_trit_t const *const flex_trits);
+retcode_t broadcaster_on_next(broadcaster_t *const broadcaster, flex_trit_t const *const flex_trits);
 
 /**
  * Gets the size of the broadcaster queue
@@ -90,6 +87,15 @@ size_t broadcaster_size(broadcaster_t *const broadcaster);
  * @return a status code
  */
 retcode_t broadcaster_stop(broadcaster_t *const broadcaster);
+
+/**
+ * Tells whether the broadcaster queue is empty or not
+ *
+ * @param broadcaster The broadcaster
+ *
+ * @return true if empty, false otherwise
+ */
+static inline bool broadcaster_is_empty(broadcaster_t *const broadcaster) { return broadcaster->queue == NULL; }
 
 #ifdef __cplusplus
 }

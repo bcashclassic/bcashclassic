@@ -1,0 +1,15 @@
+log-level: debug
+neighbors: "udp://134.209.10.170:14600"
+coordinator-address: LU9HPNPCLVURKPBORFQXMNXHWFOQIBXLUBZCWTRUNLQXKRJKNCLQAF9BAFULNELUJTRLGQLFLPJMEMMYP
+coordinator-security-level: 1
+coordinator-signature-type: CURL_P27
+snapshot-file: /home/mytoy/snapshot.txt
+port: 14265
+mwm: 9
+last-milestone: 0
+tcp-receiver-port: 14700
+udp-receiver-port: 14600
+coordinator-num-keys-in-milestone: 20
+max-depth: 1000
+#snapshot: aaa 
+#db-path: /home/a/compass/docs/ciridb

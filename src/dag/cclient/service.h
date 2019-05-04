@@ -20,7 +20,10 @@ extern "C" {
 typedef struct {
   const char* host;
   const char* path;
-  size_t port;
+  const char* content_type;
+  const char* accept;
+  const char* ca_pem;
+  uint16_t port;
   int api_version;  // IOTA API version number.
 } http_info_t;
 

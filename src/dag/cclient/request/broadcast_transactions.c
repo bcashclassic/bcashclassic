@@ -5,31 +5,50 @@
  * Refer to the LICENSE file for licensing information
  */
 
-#include "request/broadcast_transactions.h"
+#include "cclient/request/broadcast_transactions.h"
 
-broadcast_transactions_req_t* broadcast_transactions_req_new() {
-  broadcast_transactions_req_t* req = (broadcast_transactions_req_t*)malloc(
-      sizeof(broadcast_transactions_req_t));
+broadcast_transactions_req_t *broadcast_transactions_req_new() {
+  broadcast_transactions_req_t *req = (broadcast_transactions_req_t *)malloc(sizeof(broadcast_transactions_req_t));
   if (req) {
-    req->trytes = flex_hash_array_new();
+    req->trytes = hash8019_array_new();
   }
+
   return req;
 }
 
-void broadcast_transactions_req_free(broadcast_transactions_req_t** const req) {
+void broadcast_transactions_req_free(broadcast_transactions_req_t **const req) {
   if (!req || !(*req)) {
     return;
   }
-  broadcast_transactions_req_t* tmp = *req;
+
+  broadcast_transactions_req_t *tmp = *req;
+
   if (tmp->trytes) {
-    flex_hash_array_free(tmp->trytes);
+    hash_array_free(tmp->trytes);
   }
+
   free(tmp);
   *req = NULL;
 }
 
-broadcast_transactions_req_t* broadcast_transactions_req_add_trytes(
-    broadcast_transactions_req_t* const req, tryte_t const* const trytes) {
-  req->trytes = flex_hash_array_append(req->trytes, (char*)trytes);
-  return req;
+retcode_t broadcast_transactions_req_trytes_add(broadcast_transactions_req_t *req,
+                                                flex_trit_t const *const raw_trytes) {
+  if (!req->trytes) {
+    req->trytes = hash8019_array_new();
+  }
+
+  if (!req->trytes) {
+    return RC_OOM;
+  }
+
+  hash_array_push(req->trytes, raw_trytes);
+
+  return RC_OK;
+}
+
+flex_trit_t *broadcat_transactions_req_trytes_get(broadcast_transactions_req_t *req, size_t index) {
+  if (!req->trytes) {
+    return NULL;
+  }
+  return hash_array_at(req->trytes, index);
 }

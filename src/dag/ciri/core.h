@@ -8,7 +8,6 @@
 #ifndef __CIRI_CORE_H__
 #define __CIRI_CORE_H__
 
-#include "ciri/api/api.h"
 #include "ciri/conf.h"
 #include "dag/consensus/consensus.h"
 #include "gossip/components/transaction_requester.h"
@@ -23,26 +22,27 @@ typedef struct core_s {
   iota_ciri_conf_t conf;
   iota_consensus_t consensus;
   iota_node_t node;
-  iota_api_t api;
 } core_t;
 
 /**
  * Initializes a core
  *
  * @param core The core
+ * @param tangle A tangle
  *
  * @return a status code
  */
-retcode_t core_init(core_t *const core);
+retcode_t core_init(core_t *const core, tangle_t *const tangle);
 
 /**
  * Starts a core
  *
  * @param core The core
+ * @param tangle A tangle
  *
  * @return a status code
  */
-retcode_t core_start(core_t *const core);
+retcode_t core_start(core_t *const core, tangle_t *const tangle);
 
 /**
  * Stops a core

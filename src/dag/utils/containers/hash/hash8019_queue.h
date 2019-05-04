@@ -31,7 +31,7 @@ retcode_t hash8019_queue_push(hash8019_queue_t *const queue,
 void hash8019_queue_pop(hash8019_queue_t *const queue);
 flex_trit_t *hash8019_queue_peek(hash8019_queue_t const queue);
 void hash8019_queue_free(hash8019_queue_t *const queue);
-size_t hash8019_queue_count(hash8019_queue_t *const queue);
+size_t hash8019_queue_count(hash8019_queue_t const queue);
 flex_trit_t *hash8019_queue_at(hash8019_queue_t *const queue, size_t index);
 
 #ifdef __cplusplus

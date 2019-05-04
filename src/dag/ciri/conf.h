@@ -12,16 +12,11 @@
 
 #include "ciri/api/conf.h"
 #include "common/errors.h"
-#include "dag/consensus/conf.h"
+#include "consensus/conf.h"
 #include "gossip/conf.h"
 #include "utils/logger_helper.h"
 
-#ifndef  CIRI_MAINNET_VARIABLES
-  #define DB_PATH "ciri/db/ciri-mainnet.db"
-#else
-  #define DB_PATH "ciri/db/ciri-testnet.db"
-#endif
-
+#define DB_PATH "dag/ciri/db/ciri-testnet.db" // added by ck
 #define DEFAULT_LOG_LEVEL LOGGER_INFO
 #define DEFAULT_DB_PATH DB_PATH
 
@@ -50,10 +45,8 @@ typedef struct iota_ciri_conf_s {
  *
  * @return a status code
  */
-retcode_t iota_ciri_conf_default(iota_ciri_conf_t *const ciri_conf,
-                                 iota_consensus_conf_t *const consensus_conf,
-                                 iota_gossip_conf_t *const gossip_conf,
-                                 iota_api_conf_t *const api_conf);
+retcode_t iota_ciri_conf_default(iota_ciri_conf_t *const ciri_conf, iota_consensus_conf_t *const consensus_conf,
+                                 iota_gossip_conf_t *const gossip_conf, iota_api_conf_t *const api_conf);
 
 /**
  * Initializes configurations with values from file
@@ -66,10 +59,8 @@ retcode_t iota_ciri_conf_default(iota_ciri_conf_t *const ciri_conf,
  *
  * @return a status code
  */
-retcode_t iota_ciri_conf_file(iota_ciri_conf_t *const ciri_conf,
-                              iota_consensus_conf_t *const consensus_conf,
-                              iota_gossip_conf_t *const gossip_conf,
-                              iota_api_conf_t *const api_conf);
+retcode_t iota_ciri_conf_file(iota_ciri_conf_t *const ciri_conf, iota_consensus_conf_t *const consensus_conf,
+                              iota_gossip_conf_t *const gossip_conf, iota_api_conf_t *const api_conf);
 
 /**
  * Initializes configurations with values from CLI
@@ -83,10 +74,8 @@ retcode_t iota_ciri_conf_file(iota_ciri_conf_t *const ciri_conf,
  *
  * @return a status code
  */
-retcode_t iota_ciri_conf_cli(iota_ciri_conf_t *const ciri_conf,
-                             iota_consensus_conf_t *const consensus_conf,
-                             iota_gossip_conf_t *const gossip_conf,
-                             iota_api_conf_t *const api_conf, int argc,
+retcode_t iota_ciri_conf_cli(iota_ciri_conf_t *const ciri_conf, iota_consensus_conf_t *const consensus_conf,
+                             iota_gossip_conf_t *const gossip_conf, iota_api_conf_t *const api_conf, int argc,
                              char **argv);
 
 #ifdef __cplusplus
