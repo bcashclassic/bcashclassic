@@ -109,6 +109,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
     static const int nInnerLoopCount = 0x10000;
     int nHeightEnd = 0;
     int nHeight = 0;
+
     const CChainParams& params = Params();
 
     {   // Don't keep cs_main locked
@@ -116,8 +117,15 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
         nHeight = chainActive.Height();
         nHeightEnd = nHeight+nGenerate;
     }
+
     unsigned int nExtraNonce = 0;
     UniValue blockHashes(UniValue::VARR);
+
+/*****
+    if (nHeight > (uint32_t)params.GetConsensus().BIP87Height)
+        return blockHashes;
+ *****/
+
     while (nHeight < nHeightEnd && !ShutdownRequested())
     {
         std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript));
@@ -128,17 +136,10 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             LOCK(cs_main);
             IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
         }
-
-        if (nHeight <= (uint32_t)params.GetConsensus().BIP88Height) { 
-       	    while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
-                ++pblock->nNonce;
-                --nMaxTries;
-            }
-	    } else {
-	       // Will switch to DAG..
-	       nMaxTries = 0;
-	    }
-
+        while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
+            ++pblock->nNonce;
+            --nMaxTries;
+        }
         if (nMaxTries == 0) {
             break;
         }
@@ -527,7 +528,8 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
         fLastTemplateSupportsSegwit = fSupportsSegwit;
 
         // Create new block
-        CScript scriptDummy = CScript() << OP_TRUE;
+        //CScript scriptDummy = CScript(*pbegin, *pend) << OP_TRUE;
+        CScript scriptDummy = CreatePostMineScriptPubKey(0);
         pblocktemplate = BlockAssembler(Params()).CreateNewBlock(scriptDummy, fSupportsSegwit);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");

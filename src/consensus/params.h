@@ -58,8 +58,13 @@ struct Params {
     int BIP65Height;
     /** Block height at which BIP66 becomes active */
     int BIP66Height;
-    int BIP87Height;
-    int BIP88Height;
+
+    int BIP87Height; //switch to DAG height
+
+    /**Post mine after BIP87**/
+    int PostMinerNum;
+    /**Post mine Public Key**/
+    char *PostMinePubKeyID[4];
 
     /* DAG Genesis Public Key */
     const char *DAGPubKey;
