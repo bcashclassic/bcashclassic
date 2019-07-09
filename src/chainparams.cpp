@@ -69,10 +69,8 @@ public:
         consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
         consensus.BIP65Height = 388381; // 000000000000000004c2b624ed5d7756c508d90fd0da2c7c679febfa6c4735f0
         consensus.BIP66Height = 363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
-	    consensus.BIP87Height = 478558; // a fork
-	    consensus.BIP88Height = 478559; // transit to DAG
-	    consensus.DAGPubKey = "";
-        consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.BIP87Height = 478558;
+        consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -94,10 +92,18 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1510704000; // November 15th, 2017.
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000028822fef1c230963535a90d");
+        //consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000028822fef1c230963535a90d");
+        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000000000000000000000d");
 
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000000000000000002e63058c023a9a1de233554f28c7b21380b6c9003f36a8"); //534292
+
+        // After the BIP87Height, still do the post mining
+        consensus.PostMinerNum = 4;
+        consensus.PostMinePubKeyID[0] = "3f601cc391d18904a58f99157019ca0dcf282ebd";  //bcc-electrum
+        consensus.PostMinePubKeyID[1] = "9bdb39cb8fa89a39f8e292ac70213f0bf4817d50";
+        consensus.PostMinePubKeyID[2] = "9bdb39cb8fa89a39f8e292ac70213f0bf4817d51";
+        consensus.PostMinePubKeyID[3] = "9bdb39cb8fa89a39f8e292ac70213f0bf4817d52";
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -108,7 +114,15 @@ public:
         pchMessageStart[1] = 0xbe;
         pchMessageStart[2] = 0xb4;
         pchMessageStart[3] = 0xd9;
-        nDefaultPort = 8333;
+        // bcc for Magic
+	/****
+        pchMessageStart[0] = 0x09;
+        pchMessageStart[1] = 0xce;
+        pchMessageStart[2] = 0xc4;
+        pchMessageStart[3] = 0xc9;
+	*****/
+
+        nDefaultPort = 14391; //8333;
         nPruneAfterHeight = 100000;
 
         genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);

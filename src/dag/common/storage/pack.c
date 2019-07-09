@@ -17,19 +17,19 @@ retcode_t hash_pack_resize(iota_stor_pack_t *pack, size_t resize_factor) {
 
   pack->insufficient_capacity = false;
 
-  for (int i = 0; i < pack->capacity; ++i) {
+  for (size_t i = 0; i < pack->capacity; ++i) {
     free(pack->models[i]);
   }
   pack->capacity *= resize_factor;
   pack->models = realloc(pack->models, sizeof(flex_trit_t *) * pack->capacity);
   if (pack->models == NULL) {
-    return RC_STORAGE_OOM;
+    return RC_OOM;
   }
 
-  for (int i = 0; i < pack->capacity; ++i) {
+  for (size_t i = 0; i < pack->capacity; ++i) {
     pack->models[i] = malloc(FLEX_TRIT_SIZE_243);
     if (pack->models[i] == NULL) {
-      return RC_STORAGE_OOM;
+      return RC_OOM;
     }
   }
 
@@ -42,13 +42,13 @@ retcode_t hash_pack_init(iota_stor_pack_t *pack, size_t size) {
   pack->insufficient_capacity = false;
   pack->models = malloc(sizeof(flex_trit_t *) * pack->capacity);
   if (pack->models == NULL) {
-    return RC_STORAGE_OOM;
+    return RC_OOM;
   }
 
-  for (int i = 0; i < pack->capacity; ++i) {
+  for (size_t i = 0; i < pack->capacity; ++i) {
     pack->models[i] = malloc(FLEX_TRIT_SIZE_243);
     if (pack->models[i] == NULL) {
-      return RC_STORAGE_OOM;
+      return RC_OOM;
     }
   }
 
@@ -62,7 +62,7 @@ retcode_t hash_pack_reset(iota_stor_pack_t *pack) {
 }
 
 retcode_t hash_pack_free(iota_stor_pack_t *pack) {
-  for (int i = 0; i < pack->capacity; ++i) {
+  for (size_t i = 0; i < pack->capacity; ++i) {
     free(pack->models[i]);
   }
   free(pack->models);

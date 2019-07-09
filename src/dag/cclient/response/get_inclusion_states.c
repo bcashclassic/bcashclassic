@@ -11,23 +11,22 @@ get_inclusion_states_res_t* get_inclusion_states_res_new() {
   get_inclusion_states_res_t* res = (get_inclusion_states_res_t*)malloc(sizeof(get_inclusion_states_res_t));
   if (res) {
     res->states = NULL;
-    utarray_new(res->states, &ut_int_icd);
   }
   return res;
 }
 
-retcode_t get_inclusion_states_res_states_set(get_inclusion_states_res_t* res, int st) {
+retcode_t get_inclusion_states_res_states_add(get_inclusion_states_res_t* res, int state) {
   if (!res->states) {
     utarray_new(res->states, &ut_int_icd);
   }
   if (!res->states) {
     return RC_OOM;
   }
-  utarray_push_back(res->states, &st);
+  utarray_push_back(res->states, &state);
   return RC_OK;
 }
 
-bool get_inclusion_states_res_states_at(get_inclusion_states_res_t* in, int index) {
+bool get_inclusion_states_res_states_at(get_inclusion_states_res_t* in, size_t index) {
   int* b = (int*)utarray_eltptr(in->states, index);
   if (b != NULL) {
     return (*b > 0) ? true : false;
@@ -35,11 +34,13 @@ bool get_inclusion_states_res_states_at(get_inclusion_states_res_t* in, int inde
   return false;
 }
 
-int get_inclusion_states_res_states_count(get_inclusion_states_res_t* in) { return utarray_len(in->states); }
+size_t get_inclusion_states_res_states_count(get_inclusion_states_res_t* in) { return utarray_len(in->states); }
 
 void get_inclusion_states_res_free(get_inclusion_states_res_t** res) {
   if (*res) {
-    utarray_free((*res)->states);
+    if ((*res)->states) {
+      utarray_free((*res)->states);
+    }
     free(*res);
     *res = NULL;
   }

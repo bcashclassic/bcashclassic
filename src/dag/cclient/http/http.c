@@ -173,7 +173,7 @@ static retcode_t https_response_read(mbedtls_ctx_t* ctx, char_buffer_t* response
   http_parser_init(&parser, HTTP_RESPONSE);
   parser.data = &response_context;
   // Loop over received data
-  while ((num_received = tls_socket_recv(ctx, buffer, RECEIVE_BUFFER_SIZE, 0)) > 0) {
+  while ((num_received = tls_socket_recv(ctx, buffer, RECEIVE_BUFFER_SIZE)) > 0) {
     int parsed = http_parser_execute(&parser, &settings, buffer, num_received);
     // A parsing error occured, or an error in a callback
     if (parsed < num_received || response_context.status == IOTA_REQUEST_STATUS_ERROR) {
@@ -189,7 +189,8 @@ static retcode_t https_response_read(mbedtls_ctx_t* ctx, char_buffer_t* response
   return RC_OK;
 }
 
-retcode_t iota_service_query(const void* const service_opaque, char_buffer_t* obj, char_buffer_t* response) {
+retcode_t iota_service_query(void const* const service_opaque, char_buffer_t const* const obj,
+                             char_buffer_t* const response) {
   int sockfd = -1;
   retcode_t result = RC_ERROR;
   const iota_client_service_t* const service = (const iota_client_service_t* const)service_opaque;

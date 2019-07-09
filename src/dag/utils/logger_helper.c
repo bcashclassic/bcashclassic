@@ -12,6 +12,7 @@ static lock_handle_t lock;
 
 retcode_t logger_helper_init() {
   if (LOGGER_VERSION != logger_version()) {
+    printf("invalid logger version\n");
     return RC_UTILS_INVALID_LOGGER_VERSION;
   }
 

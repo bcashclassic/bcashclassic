@@ -32,9 +32,10 @@
 #define TRANSACTION_COL_HASH "hash"
 #define TRANSACTION_COL_SNAPSHOT_INDEX "snapshot_index"
 #define TRANSACTION_COL_SOLID "solid"
+#define TRANSACTION_COL_VALIDITY "validity"
 #define TRANSACTION_COL_ARRIVAL_TIME "arrival_timestamp"
 
-#define TRANSACTION_NUM_COLS 19
+#define TRANSACTION_NUM_COLS 20
 
 /*
  * Milestone definitions
@@ -47,5 +48,15 @@
 #define MILESTONE_COL_DELTA "delta"
 
 #define MILESTONE_NUM_COLS 3
+
+/*
+ * Spent address definitions
+ */
+
+#define SPENT_ADDRESS_TABLE_NAME "iota_spent_address"
+
+#define SPENT_ADDRESS_COL_HASH "hash"
+
+#define SPENT_ADDRESS_NUM_COLS 1
 
 #endif  // __COMMON_STORAGE_DEFS_H__

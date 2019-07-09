@@ -55,6 +55,25 @@ extern "C" {
 #define NUM_TRYTES_NONCE 27
 #define NUM_TRYTES_HASH 81
 
+#define NUM_FLEX_TRITS_SERIALIZED_TRANSACTION FLEX_TRIT_SIZE_8019
+#define NUM_FLEX_TRITS_SIGNATURE FLEX_TRIT_SIZE_6561
+#define NUM_FLEX_TRITS_MESSAGE FLEX_TRIT_SIZE_6561
+#define NUM_FLEX_TRITS_ADDRESS FLEX_TRIT_SIZE_243
+#define NUM_FLEX_TRITS_VALUE FLEX_TRIT_SIZE_81
+#define NUM_FLEX_TRITS_OBSOLETE_TAG FLEX_TRIT_SIZE_81
+#define NUM_FLEX_TRITS_TIMESTAMP FLEX_TRIT_SIZE_27
+#define NUM_FLEX_TRITS_CURRENT_INDEX FLEX_TRIT_SIZE_27
+#define NUM_FLEX_TRITS_LAST_INDEX FLEX_TRIT_SIZE_27
+#define NUM_FLEX_TRITS_BUNDLE FLEX_TRIT_SIZE_243
+#define NUM_FLEX_TRITS_TRUNK FLEX_TRIT_SIZE_243
+#define NUM_FLEX_TRITS_BRANCH FLEX_TRIT_SIZE_243
+#define NUM_FLEX_TRITS_TAG FLEX_TRIT_SIZE_81
+#define NUM_FLEX_TRITS_ATTACHMENT_TIMESTAMP FLEX_TRIT_SIZE_27
+#define NUM_FLEX_TRITS_ATTACHMENT_TIMESTAMP_LOWER FLEX_TRIT_SIZE_27
+#define NUM_FLEX_TRITS_ATTACHMENT_TIMESTAMP_UPPER FLEX_TRIT_SIZE_27
+#define NUM_FLEX_TRITS_NONCE FLEX_TRIT_SIZE_81
+#define NUM_FLEX_TRITS_HASH FLEX_TRIT_SIZE_243
+
 // bundle essence = 486 trits
 #define NUM_TRITS_ESSENCE                                                                                         \
   (NUM_TRITS_ADDRESS + NUM_TRITS_VALUE + NUM_TRITS_OBSOLETE_TAG + NUM_TRITS_TIMESTAMP + NUM_TRITS_CURRENT_INDEX + \
@@ -66,26 +85,26 @@ extern "C" {
 
 typedef struct iota_transaction_fields_essence_s {
   // 81 trytes = 243 trits
-  flex_trit_t address[FLEX_TRIT_SIZE_243];
+  flex_trit_t address[NUM_FLEX_TRITS_ADDRESS];
   // 27 trytes = 81 trits
   int64_t value;
   // 27 trytes = 81 trits
-  flex_trit_t obsolete_tag[FLEX_TRIT_SIZE_81];
+  flex_trit_t obsolete_tag[NUM_FLEX_TRITS_OBSOLETE_TAG];
   // 9 trytes = 27 trits
   uint64_t timestamp;
   // 9 trytes = 27 trits
-  int64_t current_index;
+  uint64_t current_index;
   // 9 trytes = 27 trits
-  int64_t last_index;
+  uint64_t last_index;
   // 81 trytes = 243 trits
-  flex_trit_t bundle[FLEX_TRIT_SIZE_243];
+  flex_trit_t bundle[NUM_FLEX_TRITS_BUNDLE];
 } iota_transaction_fields_essence_t;
 
 typedef struct iota_transaction_fields_attachment_s {
   // 81 trytes = 243 trits
-  flex_trit_t trunk[FLEX_TRIT_SIZE_243];
+  flex_trit_t trunk[NUM_FLEX_TRITS_TRUNK];
   // 81 trytes = 243 trits
-  flex_trit_t branch[FLEX_TRIT_SIZE_243];
+  flex_trit_t branch[NUM_FLEX_TRITS_BRANCH];
   // 9 trytes = 27 trits
   uint64_t attachment_timestamp;
   // 9 trytes = 27 trits
@@ -93,33 +112,34 @@ typedef struct iota_transaction_fields_attachment_s {
   // 9 trytes = 27 trits
   uint64_t attachment_timestamp_upper;
   // 27 trytes = 81 trits
-  flex_trit_t nonce[FLEX_TRIT_SIZE_81];
+  flex_trit_t nonce[NUM_FLEX_TRITS_NONCE];
   // 27 trytes = 81 trits
-  flex_trit_t tag[FLEX_TRIT_SIZE_81];
+  flex_trit_t tag[NUM_FLEX_TRITS_TAG];
 } iota_transaction_fields_attachment_t;
 
 typedef struct iota_transaction_fields_consensus_s {
   // 81 trytes = 243 trits
-  flex_trit_t hash[FLEX_TRIT_SIZE_243];
+  flex_trit_t hash[NUM_FLEX_TRITS_HASH];
 } iota_transaction_fields_consensus_t;
 
 typedef struct iota_transaction_fields_data_s {
   // 2187 trytes = 6561 trits
-  flex_trit_t signature_or_message[FLEX_TRIT_SIZE_6561];
+  flex_trit_t signature_or_message[NUM_FLEX_TRITS_MESSAGE];
 } iota_transaction_fields_data_t;
 
 typedef struct iota_transaction_fields_metadata_s {
   uint64_t snapshot_index;
   bool solid;
+  uint8_t validity;
   uint64_t arrival_timestamp;
 } iota_transaction_fields_metadata_t;
 
 typedef struct field_mask_s {
-  int16_t essence;
-  int16_t attachment;
-  int16_t consensus;
-  int16_t data;
-  int16_t metadata;
+  uint8_t essence;
+  uint8_t attachment;
+  uint8_t consensus;
+  uint8_t data;
+  uint8_t metadata;
 } field_mask_t;
 
 typedef struct iota_transaction_s {
@@ -131,7 +151,7 @@ typedef struct iota_transaction_s {
   field_mask_t loaded_columns_mask;
 } iota_transaction_t;
 
-typedef enum _field_mask_essence {
+typedef enum field_mask_essence_e {
   MASK_ESSENCE_ADDRESS = (1u << 0),
   MASK_ESSENCE_VALUE = (1u << 1),
   MASK_ESSENCE_OBSOLETE_TAG = (1u << 2),
@@ -141,9 +161,9 @@ typedef enum _field_mask_essence {
   MASK_ESSENCE_BUNDLE = (1u << 6),
   MASK_ESSENCE_ALL = MASK_ESSENCE_ADDRESS | MASK_ESSENCE_VALUE | MASK_ESSENCE_OBSOLETE_TAG | MASK_ESSENCE_TIMESTAMP |
                      MASK_ESSENCE_CURRENT_INDEX | MASK_ESSENCE_LAST_INDEX | MASK_ESSENCE_BUNDLE
-} field_mask_essence_e;
+} field_mask_essence_t;
 
-typedef enum _field_mask_attachment {
+typedef enum field_mask_attachment_e {
   MASK_ATTACHMENT_TRUNK = (1u << 0),
   MASK_ATTACHMENT_BRANCH = (1u << 1),
   MASK_ATTACHMENT_TIMESTAMP = (1u << 2),
@@ -154,24 +174,26 @@ typedef enum _field_mask_attachment {
   MASK_ATTACHMENT_ALL = MASK_ATTACHMENT_TRUNK | MASK_ATTACHMENT_BRANCH | MASK_ATTACHMENT_TIMESTAMP |
                         MASK_ATTACHMENT_TIMESTAMP_LOWER | MASK_ATTACHMENT_TIMESTAMP_UPPER | MASK_ATTACHMENT_NONCE |
                         MASK_ATTACHMENT_TAG
-} field_mask_attachment_e;
+} field_mask_attachment_t;
 
-typedef enum _field_mask_consensus {
+typedef enum field_mask_consensus_e {
   MASK_CONSENSUS_HASH = (1u << 0),
   MASK_CONSENSUS_ALL = MASK_CONSENSUS_HASH
-} field_mask_consensus_e;
+} field_mask_consensus_t;
 
-typedef enum _field_mask_data {
+typedef enum field_mask_data_e {
   MASK_DATA_SIG_OR_MSG = (1u << 0),
   MASK_DATA_ALL = MASK_DATA_SIG_OR_MSG
-} field_mask_data_e;
+} field_mask_data_t;
 
-typedef enum _field_mask_metadata {
+typedef enum field_mask_metadata_e {
   MASK_METADATA_SNAPSHOT_INDEX = (1u << 0),
   MASK_METADATA_SOLID = (1u << 1),
-  MASK_METADATA_ARRIVAL_TIMESTAMP = (1u << 2),
-  MASK_METADATA_ALL = MASK_METADATA_SNAPSHOT_INDEX | MASK_METADATA_SOLID | MASK_METADATA_ARRIVAL_TIMESTAMP
-} field_mask_metadata_e;
+  MASK_METADATA_VALIDITY = (1u << 2),
+  MASK_METADATA_ARRIVAL_TIMESTAMP = (1u << 3),
+  MASK_METADATA_ALL =
+      MASK_METADATA_SNAPSHOT_INDEX | MASK_METADATA_SOLID | MASK_METADATA_VALIDITY | MASK_METADATA_ARRIVAL_TIMESTAMP
+} field_mask_metadata_t;
 
 /***********************************************************************************************************
  * Accessors
@@ -252,25 +274,25 @@ static inline void transaction_set_timestamp(iota_transaction_t *const transacti
 }
 
 // Get the transaction current index
-static inline int64_t transaction_current_index(iota_transaction_t const *const transaction) {
+static inline uint64_t transaction_current_index(iota_transaction_t const *const transaction) {
   assert(transaction->loaded_columns_mask.essence & MASK_ESSENCE_CURRENT_INDEX);
   return transaction->essence.current_index;
 }
 
 // Set the transaction current index
-static inline void transaction_set_current_index(iota_transaction_t *const transaction, int64_t const index) {
+static inline void transaction_set_current_index(iota_transaction_t *const transaction, uint64_t const index) {
   transaction->essence.current_index = index;
   transaction->loaded_columns_mask.essence |= MASK_ESSENCE_CURRENT_INDEX;
 }
 
 // Get the transaction last index
-static inline int64_t transaction_last_index(iota_transaction_t const *const transaction) {
+static inline uint64_t transaction_last_index(iota_transaction_t const *const transaction) {
   assert(transaction->loaded_columns_mask.essence & MASK_ESSENCE_LAST_INDEX);
   return transaction->essence.last_index;
 }
 
 // Set the transaction last index
-static inline void transaction_set_last_index(iota_transaction_t *const transaction, int64_t const index) {
+static inline void transaction_set_last_index(iota_transaction_t *const transaction, uint64_t const index) {
   transaction->essence.last_index = index;
   transaction->loaded_columns_mask.essence |= MASK_ESSENCE_LAST_INDEX;
 }
@@ -405,6 +427,17 @@ static inline bool transaction_solid(iota_transaction_t const *const transaction
 static inline void transaction_set_solid(iota_transaction_t *const transaction, bool const state) {
   transaction->metadata.solid = state;
   transaction->loaded_columns_mask.metadata |= MASK_METADATA_SOLID;
+}
+
+// Get the transaction validity
+static inline uint8_t transaction_validity(iota_transaction_t const *const transaction) {
+  assert(transaction->loaded_columns_mask.metadata & MASK_METADATA_VALIDITY);
+  return transaction->metadata.validity;
+}
+// Set the transaction validity
+static inline void transaction_set_validity(iota_transaction_t *const transaction, uint8_t const validity) {
+  transaction->metadata.validity = validity;
+  transaction->loaded_columns_mask.metadata |= MASK_METADATA_VALIDITY;
 }
 
 // Get the transaction arrival timestamp

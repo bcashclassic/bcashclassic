@@ -12,6 +12,8 @@ extern "C" {
 #ifndef __COMMON_TRINARY_FLEX_TRIT_H_
 #define __COMMON_TRINARY_FLEX_TRIT_H_
 
+#define FLEX_TRIT_ENCODING_3_TRITS_PER_BYTE
+
 #if !defined(FLEX_TRIT_ENCODING_1_TRIT_PER_BYTE) && !defined(FLEX_TRIT_ENCODING_3_TRITS_PER_BYTE) && \
     !defined(FLEX_TRIT_ENCODING_4_TRITS_PER_BYTE) && !defined(FLEX_TRIT_ENCODING_5_TRITS_PER_BYTE)
 #define FLEX_TRIT_ENCODING_1_TRIT_PER_BYTE
@@ -257,6 +259,14 @@ size_t flex_trits_to_bytes(byte_t *bytes, size_t to_len, const flex_trit_t *flex
 /// @return size_t - the number of trits decoded
 size_t flex_trits_from_bytes(flex_trit_t *to_flex_trits, size_t to_len, const byte_t *bytes, size_t len,
                              size_t num_trits);
+
+/**
+ * @brief Print flex trits through stdout
+ *
+ * @param trits A pointer to flex trits
+ * @param trits_len Number of trit
+ */
+void flex_trit_print(flex_trit_t const *const trits, size_t trits_len);
 
 #endif
 #ifdef __cplusplus

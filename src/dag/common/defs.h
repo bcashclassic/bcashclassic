@@ -16,8 +16,8 @@
 
 // Conversion definitions
 
-#define TRYTE_SPACE 27
-#define BYTE_SPACE 243
+#define TRYTE_SPACE_SIZE 27
+#define BYTE_SPACE_SIZE 243
 
 #define TRYTE_VALUE_MAX 13
 #define BYTE_VALUE_MAX 121
@@ -36,6 +36,7 @@
 #define HASH_LENGTH_BYTE 49
 #define HASH_LENGTH_TRYTE 81
 #define HASH_LENGTH_TRIT 243
+#define HASH_LENGTH_FLEX_TRIT FLEX_TRIT_SIZE_243
 
 // IOTA Signing Scheme definitions
 

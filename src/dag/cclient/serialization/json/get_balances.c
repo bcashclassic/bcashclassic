@@ -9,10 +9,9 @@
 #include "cclient/serialization/json/helpers.h"
 #include "cclient/serialization/json/logger.h"
 
-retcode_t json_get_balances_serialize_request(serializer_t const *const s, get_balances_req_t const *const obj,
-                                              char_buffer_t *out) {
-  retcode_t ret = RC_OK;
-  const char *json_text = NULL;
+retcode_t json_get_balances_serialize_request(get_balances_req_t const *const obj, char_buffer_t *out) {
+  retcode_t ret = RC_ERROR;
+  char const *json_text = NULL;
   cJSON *json_root = cJSON_CreateObject();
   if (json_root == NULL) {
     log_critical(json_logger_id, "[%s:%d] %s\n", __func__, __LINE__, STR_CCLIENT_JSON_CREATE);
@@ -45,12 +44,11 @@ err:
   return ret;
 }
 
-retcode_t json_get_balances_deserialize_request(serializer_t const *const s, char const *const obj,
-                                                get_balances_req_t *const req) {
-  retcode_t ret = RC_OK;
+retcode_t json_get_balances_deserialize_request(char const *const obj, get_balances_req_t *const req) {
+  retcode_t ret = RC_ERROR;
   cJSON *json_obj = cJSON_Parse(obj);
   cJSON *json_item = NULL;
-  log_info(json_logger_id, "[%s:%d] %s\n", __func__, __LINE__, obj);
+  log_debug(json_logger_id, "[%s:%d] %s\n", __func__, __LINE__, obj);
 
   JSON_CHECK_ERROR(json_obj, json_item, json_logger_id);
 
@@ -63,9 +61,11 @@ retcode_t json_get_balances_deserialize_request(serializer_t const *const s, cha
   if (ret) {
     goto end;
   }
-  ret = json_array_to_hash243_queue(json_obj, "tips", &req->tips);
-  if (ret == RC_CCLIENT_JSON_KEY) {
-    ret = RC_OK;
+
+  if (cJSON_HasObjectItem(json_obj, "tips")) {
+    if ((ret = json_array_to_hash243_queue(json_obj, "tips", &req->tips)) != RC_OK) {
+      goto end;
+    }
   }
 
 end:
@@ -73,11 +73,10 @@ end:
   return ret;
 }
 
-retcode_t json_get_balances_serialize_response(serializer_t const *const s, get_balances_res_t const *const res,
-                                               char_buffer_t *out) {
-  retcode_t ret = RC_OK;
-  const char *json_text = NULL;
-  log_info(json_logger_id, "[%s:%d]\n", __func__, __LINE__);
+retcode_t json_get_balances_serialize_response(get_balances_res_t const *const res, char_buffer_t *out) {
+  retcode_t ret = RC_ERROR;
+  char const *json_text = NULL;
+  log_debug(json_logger_id, "[%s:%d]\n", __func__, __LINE__);
   cJSON *json_root = cJSON_CreateObject();
   if (json_root == NULL) {
     log_critical(json_logger_id, "[%s:%d] %s\n", __func__, __LINE__, STR_CCLIENT_JSON_CREATE);
@@ -89,7 +88,7 @@ retcode_t json_get_balances_serialize_response(serializer_t const *const s, get_
     goto err;
   }
 
-  ret = hash243_queue_to_json_array(res->milestone, json_root, "references");
+  ret = hash243_queue_to_json_array(res->references, json_root, "references");
   if (ret != RC_OK) {
     goto err;
   }
@@ -107,9 +106,8 @@ err:
   return ret;
 }
 
-retcode_t json_get_balances_deserialize_response(serializer_t const *const s, char const *const obj,
-                                                 get_balances_res_t *out) {
-  retcode_t ret = RC_OK;
+retcode_t json_get_balances_deserialize_response(char const *const obj, get_balances_res_t *out) {
+  retcode_t ret = RC_ERROR;
   cJSON *json_obj = cJSON_Parse(obj);
   cJSON *json_item = NULL;
 
@@ -121,12 +119,12 @@ retcode_t json_get_balances_deserialize_response(serializer_t const *const s, ch
     goto end;
   }
 
-  ret = json_array_to_hash243_queue(json_obj, "references", &out->milestone);
+  ret = json_array_to_hash243_queue(json_obj, "references", &out->references);
   if (ret) {
     goto end;
   }
 
-  ret = json_get_int(json_obj, "milestoneIndex", &out->milestone_index);
+  ret = json_get_uint64(json_obj, "milestoneIndex", &out->milestone_index);
 
 end:
   cJSON_Delete(json_obj);

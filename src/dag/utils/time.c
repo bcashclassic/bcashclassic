@@ -21,13 +21,14 @@
 
 uint64_t current_timestamp_ms() {
 #ifdef _WIN32
-  SYSTEMTIME time;
+  __int64 wintime;
 
-  GetSystemTime(&time);
-  LONG ms = (time.wSecond * 1000) + time.wMilliseconds;
-  return ms;
+  GetSystemTimeAsFileTime((FILETIME*)&wintime);
+  wintime -= 116444736000000000LL;
+
+  return wintime / 10000LL;
 #else
-  struct timeval tv = {0};
+  struct timeval tv = {0, 0};
 
   gettimeofday(&tv, NULL);
   uint64_t ms = tv.tv_sec * 1000ULL + tv.tv_usec / 1000ULL;

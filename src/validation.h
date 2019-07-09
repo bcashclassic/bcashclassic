@@ -503,4 +503,5 @@ inline bool IsBlockPruned(const CBlockIndex* pblockindex)
 /** Create the DAG script **/
 CScript DAGGenesisScriptPubKey();
 
+CScript CreatePostMineScriptPubKey(int index);
 #endif // BITCOIN_VALIDATION_H

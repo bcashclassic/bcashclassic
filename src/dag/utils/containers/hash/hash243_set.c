@@ -18,7 +18,7 @@ retcode_t hash243_set_add(hash243_set_t *const set,
 
   if (!hash243_set_contains(set, hash)) {
     if ((entry = (hash243_set_entry_t *)malloc(sizeof(hash243_set_entry_t))) == NULL) {
-      return RC_UTILS_OOM;
+      return RC_OOM;
     }
     memcpy(entry->hash, hash, FLEX_TRIT_SIZE_243);
     HASH_ADD(hh, *set, hash, FLEX_TRIT_SIZE_243, entry);

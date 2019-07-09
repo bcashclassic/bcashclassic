@@ -26,10 +26,14 @@ typedef struct hash_to_int64_t_map_entry_s {
 
 typedef hash_to_int64_t_map_entry_t *hash_to_int64_t_map_t;
 
+size_t hash_to_int64_t_map_size(hash_to_int64_t_map_t map);
+
 retcode_t hash_to_int64_t_map_add(hash_to_int64_t_map_t *const map,
         flex_trit_t const *const hash,
 int64_t const value);
 bool hash_to_int64_t_map_contains(hash_to_int64_t_map_t const *const map,
+        flex_trit_t const *const hash);
+bool hash_to_int64_t_map_remove(hash_to_int64_t_map_t *const map,
         flex_trit_t const *const hash);
 bool hash_to_int64_t_map_find(hash_to_int64_t_map_t const *const map,
         flex_trit_t const *const hash,
@@ -37,6 +41,12 @@ hash_to_int64_t_map_entry_t ** const res);
 void hash_to_int64_t_map_free(hash_to_int64_t_map_t *const map);
 void hash_to_int64_t_map_keys(hash_to_int64_t_map_t *const map,
                              hash243_set_t * const keys);
+
+retcode_t hash_to_int64_t_map_copy(hash_to_int64_t_map_t const *const src,
+        hash_to_int64_t_map_t *const dst);
+
+bool hash_to_int64_t_map_equal(hash_to_int64_t_map_t const lhs,
+        hash_to_int64_t_map_t const rhs);
 
 #ifdef __cplusplus
 }

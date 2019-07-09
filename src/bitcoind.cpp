@@ -25,6 +25,11 @@
 
 const std::function<std::string(const char*)> G_TRANSLATION_FUN = nullptr;
 
+extern "C"{ 
+   int dag_start();
+   int dag_stop();
+}
+
 /* Introduction text for doxygen: */
 
 /*! \mainpage Developer documentation
@@ -165,6 +170,7 @@ static bool AppInit(int argc, char* argv[])
             return false;
         }
         fRet = AppInitMain();
+
     }
     catch (const std::exception& e) {
         PrintExceptionContinue(&e, "AppInit()");
@@ -183,6 +189,18 @@ static bool AppInit(int argc, char* argv[])
     return fRet;
 }
 
+std::thread dag_init() {
+    std::thread threadDag;
+    threadDag = std::thread(&TraceThread<std::function<void()> >, "dag", std::function<void()>(&dag_start));
+   return threadDag; 
+}
+
+void dag_deinit(std::thread *thread) {
+    dag_stop();
+    thread->join();
+   return; 
+}
+
 int main(int argc, char* argv[])
 {
 #ifdef WIN32
@@ -194,5 +212,12 @@ int main(int argc, char* argv[])
     // Connect bitcoind signal handlers
     noui_connect();
 
-    return (AppInit(argc, argv) ? EXIT_SUCCESS : EXIT_FAILURE);
+    // init dag
+    std::thread threadDag = dag_init();
+
+    int ret = AppInit(argc, argv) ? EXIT_SUCCESS : EXIT_FAILURE;
+
+    dag_deinit(&threadDag);
+
+    return ret;
 }

@@ -8,6 +8,8 @@
 #ifndef __COMMON_STORAGE_SQL_SQLITE3_CONNECTION_H__
 #define __COMMON_STORAGE_SQL_SQLITE3_CONNECTION_H__
 
+#include <sqlite3.h>
+
 #include "common/storage/connection.h"
 #include "common/storage/sql/statements.h"
 
@@ -15,10 +17,15 @@
 extern "C" {
 #endif
 
-typedef struct sqlite3_connection_s {
+typedef struct sqlite3_tangle_connection_s {
   sqlite3* db;
-  iota_statements_t statements;
-} sqlite3_connection_t;
+  tangle_statements_t statements;
+} sqlite3_tangle_connection_t;
+
+typedef struct sqlite3_spent_addresses_connection_s {
+  sqlite3* db;
+  spent_addresses_statements_t statements;
+} sqlite3_spent_addresses_connection_t;
 
 #ifdef __cplusplus
 }

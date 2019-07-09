@@ -12,11 +12,9 @@
 static const char *kCmdName = "broadcastTransactions";
 static const char *kTrytes = "trytes";
 
-retcode_t json_broadcast_transactions_serialize_request(const serializer_t *const s,
-                                                        broadcast_transactions_req_t *const req, char_buffer_t *out) {
-  retcode_t ret = RC_OK;
-  const char *json_text = NULL;
-  size_t len = 0;
+retcode_t json_broadcast_transactions_serialize_request(broadcast_transactions_req_t *const req, char_buffer_t *out) {
+  retcode_t ret = RC_ERROR;
+  char const *json_text = NULL;
   log_debug(json_logger_id, "[%s:%d]\n", __func__, __LINE__);
   cJSON *json_root = cJSON_CreateObject();
   if (json_root == NULL) {
@@ -34,11 +32,7 @@ retcode_t json_broadcast_transactions_serialize_request(const serializer_t *cons
 
   json_text = cJSON_PrintUnformatted(json_root);
   if (json_text) {
-    len = strlen(json_text);
-    ret = char_buffer_allocate(out, len);
-    if (ret == RC_OK) {
-      strncpy(out->data, json_text, len);
-    }
+    ret = char_buffer_set(out, json_text);
     cJSON_free((void *)json_text);
   }
 
@@ -46,9 +40,9 @@ retcode_t json_broadcast_transactions_serialize_request(const serializer_t *cons
   return ret;
 }
 
-retcode_t json_broadcast_transactions_deserialize_request(const serializer_t *const s, const char *const obj,
+retcode_t json_broadcast_transactions_deserialize_request(char const *const obj,
                                                           broadcast_transactions_req_t *const out) {
-  retcode_t ret = RC_OK;
+  retcode_t ret = RC_ERROR;
 
   if (out->trytes == NULL) {
     out->trytes = hash8019_array_new();

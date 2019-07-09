@@ -11,9 +11,9 @@
 #include "common/model/bundle.h"
 #include "utils/containers/hash/hash_array.h"
 
-retcode_t iota_client_attach_to_tangle(const iota_client_service_t* const service,
-                                       const attach_to_tangle_req_t* const req, attach_to_tangle_res_t* res) {
-  retcode_t result = RC_OK;
+retcode_t iota_client_attach_to_tangle(iota_client_service_t const* const service,
+                                       attach_to_tangle_req_t const* const req, attach_to_tangle_res_t* res) {
+  retcode_t result = RC_ERROR;
   char_buffer_t* res_buff = NULL;
   char_buffer_t* req_buff = NULL;
   bundle_transactions_t* bundle = NULL;
@@ -31,7 +31,7 @@ retcode_t iota_client_attach_to_tangle(const iota_client_service_t* const servic
     }
 
     // PoW on bundle
-    if (iota_pow_bundle(bundle, req->trunk, req->branch, req->mwm) != RC_OK) {
+    if ((result = iota_pow_bundle(bundle, req->trunk, req->branch, req->mwm)) != RC_OK) {
       log_info(client_core_logger_id, "[%s:%d] PoW failed.\n", __func__, __LINE__);
       result = RC_CCLIENT_POW_FAILED;
       goto done;
@@ -57,11 +57,11 @@ retcode_t iota_client_attach_to_tangle(const iota_client_service_t* const servic
     req_buff = char_buffer_new();
     if (req_buff == NULL || res_buff == NULL) {
       log_critical(client_core_logger_id, "[%s:%d] %s\n", __func__, __LINE__, STR_CCLIENT_OOM);
-      result = RC_CCLIENT_OOM;
+      result = RC_OOM;
       goto done;
     }
 
-    result = service->serializer.vtable.attach_to_tangle_serialize_request(&service->serializer, req, req_buff);
+    result = service->serializer.vtable.attach_to_tangle_serialize_request(req, req_buff);
     if (result != RC_OK) {
       goto done;
     }
@@ -72,8 +72,7 @@ retcode_t iota_client_attach_to_tangle(const iota_client_service_t* const servic
       goto done;
     }
 
-    result =
-        service->serializer.vtable.attach_to_tangle_deserialize_response(&service->serializer, res_buff->data, res);
+    result = service->serializer.vtable.attach_to_tangle_deserialize_response(res_buff->data, res);
   }
 
 done:

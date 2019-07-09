@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cjson/cJSON.h"
+#include "cJSON.h"
 #include "utarray.h"
 
 #include "cclient/serialization/json/logger.h"
@@ -39,22 +39,23 @@ retcode_t json_array_to_uint64(cJSON const* const obj, char const* const obj_nam
 }
 
 retcode_t utarray_to_json_array(UT_array const* const ut, cJSON* const json_root, char const* const obj_name) {
+  cJSON* array_obj = cJSON_CreateArray();
+  char** p = NULL;
+
   if (!ut) {
     log_error(json_logger_id, "[%s:%d] %s\n", __func__, __LINE__, STR_NULL_PARAM);
     return RC_NULL_PARAM;
   }
-  if (utarray_len(ut) > 0) {
-    cJSON* array_obj = cJSON_CreateArray();
-    if (array_obj == NULL) {
-      log_critical(json_logger_id, "[%s:%d] %s\n", __func__, __LINE__, STR_CCLIENT_JSON_CREATE);
-      return RC_CCLIENT_JSON_CREATE;
-    }
 
-    cJSON_AddItemToObject(json_root, obj_name, array_obj);
-    char** p = NULL;
-    while ((p = (char**)utarray_next(ut, p))) {
-      cJSON_AddItemToArray(array_obj, cJSON_CreateString(*p));
-    }
+  if (array_obj == NULL) {
+    log_critical(json_logger_id, "[%s:%d] %s\n", __func__, __LINE__, STR_CCLIENT_JSON_CREATE);
+    return RC_CCLIENT_JSON_CREATE;
+  }
+
+  cJSON_AddItemToObject(json_root, obj_name, array_obj);
+
+  while ((p = (char**)utarray_next(ut, p))) {
+    cJSON_AddItemToArray(array_obj, cJSON_CreateString(*p));
   }
   return RC_OK;
 }
@@ -95,6 +96,27 @@ retcode_t json_boolean_array_to_utarray(cJSON const* const obj, char const* cons
   } else {
     log_error(json_logger_id, "[%s:%d] %s not array\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
     return RC_CCLIENT_JSON_PARSE;
+  }
+  return RC_OK;
+}
+
+retcode_t utarray_to_json_boolean_array(UT_array const* const ut, cJSON* const json_root, char const* const obj_name) {
+  if (!ut) {
+    log_error(json_logger_id, "[%s:%d] %s\n", __func__, __LINE__, STR_NULL_PARAM);
+    return RC_NULL_PARAM;
+  }
+  if (utarray_len(ut) > 0) {
+    cJSON* array_obj = cJSON_CreateArray();
+    if (array_obj == NULL) {
+      log_critical(json_logger_id, "[%s:%d] %s\n", __func__, __LINE__, STR_CCLIENT_JSON_CREATE);
+      return RC_CCLIENT_JSON_CREATE;
+    }
+
+    cJSON_AddItemToObject(json_root, obj_name, array_obj);
+    int* p = NULL;
+    while ((p = (int*)utarray_next(ut, p))) {
+      cJSON_AddItemToArray(array_obj, cJSON_CreateBool(*p));
+    }
   }
   return RC_OK;
 }
@@ -146,7 +168,7 @@ retcode_t json_get_uint8(cJSON const* const json_obj, char const* const obj_name
     return RC_CCLIENT_JSON_KEY;
   }
 
-  if (cJSON_IsNumber(json_value) && json_value->valueint >= 0 && json_value->valueint <= UINT8_MAX) {
+  if (cJSON_IsNumber(json_value) && json_value->valueint >= 0) {
     *num = (uint8_t)json_value->valueint;
   } else {
     log_error(json_logger_id, "[%s:%d] %s not number\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
@@ -163,7 +185,7 @@ retcode_t json_get_uint16(cJSON const* const json_obj, char const* const obj_nam
     return RC_CCLIENT_JSON_KEY;
   }
 
-  if (cJSON_IsNumber(json_value) && json_value->valueint >= 0 && json_value->valueint <= UINT16_MAX) {
+  if (cJSON_IsNumber(json_value) && json_value->valueint >= 0) {
     *num = (uint16_t)json_value->valueint;
   } else {
     log_error(json_logger_id, "[%s:%d] %s not number\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
@@ -180,8 +202,8 @@ retcode_t json_get_uint32(cJSON const* const json_obj, char const* const obj_nam
     return RC_CCLIENT_JSON_KEY;
   }
 
-  if (cJSON_IsNumber(json_value) && json_value->valueint >= 0 && json_value->valueint <= UINT32_MAX) {
-    *num = (uint32_t)json_value->valueint;
+  if (cJSON_IsNumber(json_value) && json_value->valuedouble >= 0) {
+    *num = (uint32_t)json_value->valuedouble;
   } else {
     log_error(json_logger_id, "[%s:%d] %s not number\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
     return RC_CCLIENT_JSON_PARSE;
@@ -197,7 +219,7 @@ retcode_t json_get_uint64(cJSON const* const json_obj, char const* const obj_nam
     return RC_CCLIENT_JSON_KEY;
   }
 
-  if (cJSON_IsNumber(json_value)) {
+  if (cJSON_IsNumber(json_value) && json_value->valuedouble >= 0) {
     *num = (uint64_t)json_value->valuedouble;
   } else {
     log_error(json_logger_id, "[%s:%d] %s not number\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
@@ -208,8 +230,7 @@ retcode_t json_get_uint64(cJSON const* const json_obj, char const* const obj_nam
 }
 
 retcode_t json_get_string(cJSON const* const json_obj, char const* const obj_name, char_buffer_t* const text) {
-  retcode_t ret = RC_OK;
-  size_t str_len = 0;
+  retcode_t ret = RC_ERROR;
   cJSON* json_value = cJSON_GetObjectItemCaseSensitive(json_obj, obj_name);
   if (json_value == NULL) {
     log_error(json_logger_id, "[%s:%d] %s %s.\n", __func__, __LINE__, STR_CCLIENT_JSON_KEY, obj_name);
@@ -217,14 +238,11 @@ retcode_t json_get_string(cJSON const* const json_obj, char const* const obj_nam
   }
 
   if (cJSON_IsString(json_value) && (json_value->valuestring != NULL)) {
-    str_len = strlen(json_value->valuestring);
-    ret = char_buffer_allocate(text, str_len);
+    ret = char_buffer_set(text, json_value->valuestring);
     if (ret != RC_OK) {
       log_error(json_logger_id, "[%s:%d] memory allocation failed.\n", __func__, __LINE__);
       return ret;
     }
-
-    strcpy(text->data, json_value->valuestring);
   } else {
     log_error(json_logger_id, "[%s:%d] %s not string\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
     return RC_CCLIENT_JSON_PARSE;
@@ -239,7 +257,7 @@ retcode_t hash243_queue_to_json_array(hash243_queue_t queue, cJSON* const json_r
   hash243_queue_entry_t* q_iter = NULL;
 
   array_count = hash243_queue_count(queue);
-  if (array_count > 0) {
+  if (array_count >= 0) {
     array_obj = cJSON_CreateArray();
     if (array_obj == NULL) {
       return RC_CCLIENT_JSON_CREATE;
@@ -262,34 +280,30 @@ retcode_t hash243_queue_to_json_array(hash243_queue_t queue, cJSON* const json_r
 }
 
 retcode_t hash243_stack_to_json_array(hash243_stack_t stack, cJSON* const json_root, char const* const obj_name) {
-  size_t array_count;
-  cJSON* array_obj = NULL;
+  cJSON* array_obj = cJSON_CreateArray();
+  hash243_stack_entry_t* iter = NULL;
+  tryte_t trytes_out[NUM_TRYTES_HASH + 1];
 
-  array_count = hash243_stack_count(stack);
-  if (array_count > 0) {
-    array_obj = cJSON_CreateArray();
-    if (array_obj == NULL) {
-      return RC_CCLIENT_JSON_CREATE;
-    }
-    cJSON_AddItemToObject(json_root, obj_name, array_obj);
+  if (array_obj == NULL) {
+    return RC_CCLIENT_JSON_CREATE;
+  }
 
-    for (int i = array_count - 1; i >= 0; i--) {
-      tryte_t trytes_out[NUM_TRYTES_HASH + 1];
-      size_t trits_count =
-          flex_trits_to_trytes(trytes_out, NUM_TRYTES_HASH, hash243_stack_at(stack, i), NUM_TRITS_HASH, NUM_TRITS_HASH);
-      trytes_out[NUM_TRYTES_HASH] = '\0';
-      if (trits_count != 0) {
-        cJSON_AddItemToArray(array_obj, cJSON_CreateString((char const*)trytes_out));
-      } else {
-        return RC_CCLIENT_FLEX_TRITS;
-      }
+  cJSON_AddItemToObject(json_root, obj_name, array_obj);
+
+  trytes_out[NUM_TRYTES_HASH] = '\0';
+  HASH_STACK_FOREACH(stack, iter) {
+    size_t trits_count = flex_trits_to_trytes(trytes_out, NUM_TRYTES_HASH, iter->hash, NUM_TRITS_HASH, NUM_TRITS_HASH);
+    if (trits_count != 0) {
+      cJSON_AddItemToArray(array_obj, cJSON_CreateString((char const*)trytes_out));
+    } else {
+      return RC_CCLIENT_FLEX_TRITS;
     }
   }
   return RC_OK;
 }
 
 retcode_t json_array_to_hash243_queue(cJSON const* const obj, char const* const obj_name, hash243_queue_t* queue) {
-  retcode_t ret_code = RC_OK;
+  retcode_t ret_code = RC_ERROR;
   flex_trit_t hash[FLEX_TRIT_SIZE_243] = {};
   cJSON* json_item = cJSON_GetObjectItemCaseSensitive(obj, obj_name);
   if (!json_item) {
@@ -300,7 +314,7 @@ retcode_t json_array_to_hash243_queue(cJSON const* const obj, char const* const 
     cJSON* current_obj = NULL;
     cJSON_ArrayForEach(current_obj, json_item) {
       if (current_obj->valuestring != NULL) {
-        flex_trits_from_trytes(hash, NUM_TRITS_HASH, (const tryte_t*)current_obj->valuestring, NUM_TRYTES_HASH,
+        flex_trits_from_trytes(hash, NUM_TRITS_HASH, (tryte_t const*)current_obj->valuestring, NUM_TRYTES_HASH,
                                NUM_TRYTES_HASH);
         ret_code = hash243_queue_push(queue, hash);
         if (ret_code) {
@@ -308,6 +322,7 @@ retcode_t json_array_to_hash243_queue(cJSON const* const obj, char const* const 
         }
       }
     }
+    ret_code = RC_OK;
   } else {
     log_error(json_logger_id, "[%s:%d] %s not array\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
     return RC_CCLIENT_JSON_PARSE;
@@ -315,22 +330,23 @@ retcode_t json_array_to_hash243_queue(cJSON const* const obj, char const* const 
   return ret_code;
 }
 
-retcode_t json_array_to_hash243_stack(cJSON const* const obj, char const* const obj_name, hash243_stack_t* queue) {
-  retcode_t ret_code = RC_OK;
+retcode_t json_array_to_hash243_stack(cJSON const* const obj, char const* const obj_name, hash243_stack_t* stack) {
+  retcode_t ret_code = RC_ERROR;
   flex_trit_t hash[FLEX_TRIT_SIZE_243] = {};
   cJSON* json_item = cJSON_GetObjectItemCaseSensitive(obj, obj_name);
   if (cJSON_IsArray(json_item)) {
     cJSON* current_obj = NULL;
     cJSON_ArrayForEach(current_obj, json_item) {
       if (current_obj->valuestring != NULL) {
-        flex_trits_from_trytes(hash, NUM_TRITS_HASH, (const tryte_t*)current_obj->valuestring, NUM_TRYTES_HASH,
+        flex_trits_from_trytes(hash, NUM_TRITS_HASH, (tryte_t const*)current_obj->valuestring, NUM_TRYTES_HASH,
                                NUM_TRYTES_HASH);
-        ret_code = hash243_stack_push(queue, hash);
+        ret_code = hash243_stack_push(stack, hash);
         if (ret_code) {
           return ret_code;
         }
       }
     }
+    ret_code = RC_OK;
   } else {
     log_error(json_logger_id, "[%s:%d] %s not array\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
     return RC_CCLIENT_JSON_PARSE;
@@ -365,15 +381,42 @@ retcode_t hash81_queue_to_json_array(hash81_queue_t queue, cJSON* const json_roo
   return RC_OK;
 }
 
+retcode_t json_array_to_hash81_queue(cJSON const* const obj, char const* const obj_name, hash81_queue_t* queue) {
+  retcode_t ret_code = RC_ERROR;
+  flex_trit_t hash[FLEX_TRIT_SIZE_81] = {};
+  cJSON* json_item = cJSON_GetObjectItemCaseSensitive(obj, obj_name);
+  if (!json_item) {
+    return RC_CCLIENT_JSON_KEY;
+  }
+
+  if (cJSON_IsArray(json_item)) {
+    cJSON* current_obj = NULL;
+    cJSON_ArrayForEach(current_obj, json_item) {
+      if (current_obj->valuestring != NULL) {
+        flex_trits_from_trytes(hash, NUM_TRITS_TAG, (tryte_t const*)current_obj->valuestring, NUM_TRYTES_TAG,
+                               NUM_TRYTES_TAG);
+        ret_code = hash81_queue_push(queue, hash);
+        if (ret_code) {
+          return ret_code;
+        }
+      }
+    }
+  } else {
+    log_error(json_logger_id, "[%s:%d] %s not array\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
+    return RC_CCLIENT_JSON_PARSE;
+  }
+  return ret_code;
+}
+
 retcode_t json_array_to_hash8019_queue(cJSON const* const obj, char const* const obj_name, hash8019_queue_t* queue) {
-  retcode_t ret_code = RC_OK;
+  retcode_t ret_code = RC_ERROR;
   flex_trit_t hash[FLEX_TRIT_SIZE_8019] = {};
   cJSON* json_item = cJSON_GetObjectItemCaseSensitive(obj, obj_name);
   if (cJSON_IsArray(json_item)) {
     cJSON* current_obj = NULL;
     cJSON_ArrayForEach(current_obj, json_item) {
       if (current_obj->valuestring != NULL) {
-        flex_trits_from_trytes(hash, NUM_TRITS_SERIALIZED_TRANSACTION, (const tryte_t*)current_obj->valuestring,
+        flex_trits_from_trytes(hash, NUM_TRITS_SERIALIZED_TRANSACTION, (tryte_t const*)current_obj->valuestring,
                                NUM_TRYTES_SERIALIZED_TRANSACTION, NUM_TRYTES_SERIALIZED_TRANSACTION);
         ret_code = hash8019_queue_push(queue, hash);
         if (ret_code) {
@@ -403,8 +446,8 @@ retcode_t flex_trits_to_json_string(cJSON* const json_obj, char const* const key
   }
   return RC_OK;
 }
+
 retcode_t json_string_hash_to_flex_trits(cJSON const* const json_obj, char const* const key, flex_trit_t* hash) {
-  retcode_t ret = RC_OK;
   size_t trit_len = 0;
   cJSON* json_value = cJSON_GetObjectItemCaseSensitive(json_obj, key);
   if (json_value == NULL) {
@@ -412,16 +455,16 @@ retcode_t json_string_hash_to_flex_trits(cJSON const* const json_obj, char const
     return RC_CCLIENT_JSON_KEY;
   }
   if (cJSON_IsString(json_value) && (json_value->valuestring != NULL)) {
-    trit_len = flex_trits_from_trytes(hash, NUM_TRITS_HASH, (const tryte_t*)json_value->valuestring, NUM_TRYTES_HASH,
+    trit_len = flex_trits_from_trytes(hash, NUM_TRITS_HASH, (tryte_t const*)json_value->valuestring, NUM_TRYTES_HASH,
                                       NUM_TRYTES_HASH);
     if (!trit_len) {
       return RC_CCLIENT_FLEX_TRITS;
     }
+    return RC_OK;
   } else {
     log_error(json_logger_id, "[%s:%d] %s not string\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
     return RC_CCLIENT_JSON_PARSE;
   }
-  return ret;
 }
 
 retcode_t hash8019_queue_to_json_array(hash8019_queue_t queue, cJSON* const json_root, char const* const obj_name) {
@@ -432,7 +475,7 @@ retcode_t hash8019_queue_to_json_array(hash8019_queue_t queue, cJSON* const json
   size_t trits_count = 0;
 
   array_count = hash8019_queue_count(queue);
-  if (array_count > 0) {
+  if (array_count >= 0) {
     array_obj = cJSON_CreateArray();
     if (array_obj == NULL) {
       return RC_CCLIENT_JSON_CREATE;
@@ -512,14 +555,13 @@ retcode_t hash8019_array_to_json_array(hash8019_array_p array, cJSON* const json
 }
 
 retcode_t json_array_to_hash8019_array(cJSON const* const obj, char const* const obj_name, hash8019_array_p array) {
-  retcode_t ret_code = RC_OK;
   flex_trit_t hash[FLEX_TRIT_SIZE_8019] = {};
   cJSON* json_item = cJSON_GetObjectItemCaseSensitive(obj, obj_name);
   if (cJSON_IsArray(json_item)) {
     cJSON* current_obj = NULL;
     cJSON_ArrayForEach(current_obj, json_item) {
       if (current_obj->valuestring != NULL) {
-        flex_trits_from_trytes(hash, NUM_TRITS_SERIALIZED_TRANSACTION, (const tryte_t*)current_obj->valuestring,
+        flex_trits_from_trytes(hash, NUM_TRITS_SERIALIZED_TRANSACTION, (tryte_t const*)current_obj->valuestring,
                                NUM_TRYTES_SERIALIZED_TRANSACTION, NUM_TRYTES_SERIALIZED_TRANSACTION);
         hash_array_push(array, hash);
       }
@@ -528,5 +570,5 @@ retcode_t json_array_to_hash8019_array(cJSON const* const obj, char const* const
     log_error(json_logger_id, "[%s:%d] %s not array\n", __func__, __LINE__, STR_CCLIENT_JSON_PARSE);
     return RC_CCLIENT_JSON_PARSE;
   }
-  return ret_code;
+  return RC_OK;
 }

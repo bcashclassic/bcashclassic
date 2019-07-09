@@ -15,6 +15,12 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     assert(pindexLast != nullptr);
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
+    // Post mine, lowest difficaulty
+    if ((pindexLast->nHeight+1) >= params.BIP87Height) {
+        arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
+        return bnPowLimit.GetCompact();
+    }
+
     // Only change once per difficulty adjustment interval
     if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
     {

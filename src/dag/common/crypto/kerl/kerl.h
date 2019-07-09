@@ -11,8 +11,7 @@
 #ifdef __XTENSA__
 #include "FIPS202/KeccakHash.h"
 #else
-//#include <keccak/KeccakHash.h>
-#include "KeccakHash.h"
+#include <keccak/KeccakHash.h>
 #endif
 
 #include "common/stdint.h"

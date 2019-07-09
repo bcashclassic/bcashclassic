@@ -284,6 +284,16 @@ static void MutateTxAddOutAddr(CMutableTransaction& tx, const std::string& strIn
     }
     CScript scriptPubKey = GetScriptForDestination(destination);
 
+    CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
+    stream << scriptPubKey;
+    std::vector<unsigned char> script(stream.begin(), stream.end());
+    fprintf(stdout, "The scriptPubkey: (total len) + OP_DUP + OP_HASH160 + (ID len) + pubKeyID + OP_EQUALVERIFY + OP_CHECKSIG\n");
+    fprintf(stdout, "scirpt: ");
+    for (unsigned char c : script) {
+        fprintf(stdout, "%02x", c);
+    }
+    fprintf(stdout, "\n");
+
     // construct TxOut, append to transaction output list
     CTxOut txout(value, scriptPubKey);
     tx.vout.push_back(txout);

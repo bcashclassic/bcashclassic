@@ -23,6 +23,8 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":api_core",
+        "//common/model:inputs",
+        "//common/model:transfer",
         "//utils:time",
     ],
 )
@@ -37,10 +39,4 @@ cc_library(
     deps = [
         ":api_extended",
     ],
-)
-
-cc_binary(
-    name = "libcclient.so",
-    linkshared = True,
-    deps = [":api"],
 )

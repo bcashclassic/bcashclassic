@@ -130,7 +130,7 @@ size_t transaction_serialize_to_flex_trits(iota_transaction_t const *const trans
   flex_trit_t partial[FLEX_TRIT_SIZE_81];
   size_t offset = 0;
 
-  memset(trits, FLEX_TRIT_NULL_VALUE, FLEX_TRIT_SIZE_8019);
+  memset(trits, FLEX_TRIT_NULL_VALUE, NUM_FLEX_TRITS_SERIALIZED_TRANSACTION);
 
   flex_trits_insert(trits, NUM_TRITS_SERIALIZED_TRANSACTION, transaction->data.signature_or_message,
                     NUM_TRITS_SIGNATURE, offset, NUM_TRITS_SIGNATURE);
@@ -233,7 +233,7 @@ iota_transaction_t *transaction_new(void) {
   iota_transaction_t *transaction;
   transaction = (iota_transaction_t *)malloc(sizeof(iota_transaction_t));
   if (!transaction) {
-    // errno = IOTA_OUT_OF_MEMORY
+    return NULL;
   }
   transaction_reset(transaction);
   return transaction;
@@ -262,7 +262,7 @@ iota_transaction_t *transaction_deserialize(flex_trit_t const *const trits, bool
 // Returns the serialized data from an existing transaction
 // Returns NULL if failed
 flex_trit_t *transaction_serialize(iota_transaction_t const *const transaction) {
-  size_t num_bytes = FLEX_TRIT_SIZE_8019;
+  size_t num_bytes = NUM_FLEX_TRITS_SERIALIZED_TRANSACTION;
   flex_trit_t *serialized_value = (flex_trit_t *)malloc(sizeof(flex_trit_t) * num_bytes);
   if (!serialized_value) {
     // errno = IOTA_OUT_OF_MEMORY
@@ -299,51 +299,58 @@ void transaction_free(iota_transaction_t *const transaction) { free(transaction)
 
 #ifdef DEBUG
 void transaction_obj_dump(iota_transaction_t *tx_obj) {
-  tryte_t trytes_81[NUM_TRYTES_HASH + 1];
-  tryte_t trytes_27[NUM_TRYTES_TAG + 1];
+  field_mask_t old_mask = {};
+  memcpy(&old_mask, &tx_obj->loaded_columns_mask, sizeof(field_mask_t));
+  memset(&tx_obj->loaded_columns_mask, 0xFFFFF, sizeof(field_mask_t));
 
   printf("==========Transaction Object==========\n");
   // address
-  flex_trits_to_trytes(trytes_81, NUM_TRYTES_HASH, transaction_address(tx_obj), NUM_TRITS_HASH, NUM_TRITS_HASH);
-  trytes_81[NUM_TRYTES_HASH] = '\0';
-  printf("addr: %s\n", trytes_81);
+  printf("address: ");
+  flex_trit_print(transaction_address(tx_obj), NUM_TRITS_ADDRESS);
+  printf("\n");
 
   printf("value: %" PRId64 "\n", transaction_value(tx_obj));
 
-  flex_trits_to_trytes(trytes_81, NUM_TRYTES_HASH, transaction_obsolete_tag(tx_obj), NUM_TRITS_HASH, NUM_TRITS_HASH);
-  trytes_81[NUM_TRYTES_HASH] = '\0';
-  printf("obsolete_tag: %s\n", trytes_81);
+  printf("obsolete tag: ");
+  flex_trit_print(transaction_obsolete_tag(tx_obj), NUM_TRITS_OBSOLETE_TAG);
+  printf("\n");
 
   printf("timestamp: %" PRId64 "\n", transaction_timestamp(tx_obj));
   printf("curr index: %" PRId64 " \nlast index: %" PRId64 "\n", transaction_current_index(tx_obj),
          transaction_last_index(tx_obj));
 
-  flex_trits_to_trytes(trytes_81, NUM_TRYTES_HASH, transaction_bundle(tx_obj), NUM_TRITS_HASH, NUM_TRITS_HASH);
-  trytes_81[NUM_TRYTES_HASH] = '\0';
-  printf("bundle: %s\n", trytes_81);
+  printf("bundle: ");
+  flex_trit_print(transaction_bundle(tx_obj), NUM_TRITS_BUNDLE);
+  printf("\n");
 
-  flex_trits_to_trytes(trytes_81, NUM_TRYTES_HASH, transaction_trunk(tx_obj), NUM_TRITS_HASH, NUM_TRITS_HASH);
-  trytes_81[NUM_TRYTES_HASH] = '\0';
-  printf("trunk: %s\n", trytes_81);
+  printf("trunk: ");
+  flex_trit_print(transaction_trunk(tx_obj), NUM_TRITS_TRUNK);
+  printf("\n");
 
-  flex_trits_to_trytes(trytes_81, NUM_TRYTES_HASH, transaction_branch(tx_obj), NUM_TRITS_HASH, NUM_TRITS_HASH);
-  trytes_81[NUM_TRYTES_HASH] = '\0';
-  printf("branch: %s\n", trytes_81);
+  printf("branch: ");
+  flex_trit_print(transaction_branch(tx_obj), NUM_TRITS_BRANCH);
+  printf("\n");
 
-  flex_trits_to_trytes(trytes_27, NUM_TRYTES_TAG, transaction_tag(tx_obj), NUM_TRITS_TAG, NUM_TRITS_TAG);
-  trytes_27[NUM_TRYTES_TAG] = '\0';
-  printf("tag: %s\n", trytes_27);
+  printf("tag: ");
+  flex_trit_print(transaction_tag(tx_obj), NUM_TRITS_TAG);
+  printf("\n");
 
   printf("attachment_timestamp: %" PRId64 "\n", transaction_attachment_timestamp(tx_obj));
   printf("attachment_timestamp_lower: %" PRId64 "\n", transaction_attachment_timestamp_lower(tx_obj));
   printf("attachment_timestamp_upper: %" PRId64 "\n", transaction_attachment_timestamp_upper(tx_obj));
 
-  flex_trits_to_trytes(trytes_27, NUM_TRYTES_TAG, transaction_nonce(tx_obj), NUM_TRITS_TAG, NUM_TRITS_TAG);
-  trytes_27[NUM_TRYTES_TAG] = '\0';
-  printf("nonce: %s\n", trytes_27);
+  printf("nonce: ");
+  flex_trit_print(transaction_nonce(tx_obj), NUM_TRITS_NONCE);
+  printf("\n");
 
-  flex_trits_to_trytes(trytes_81, NUM_TRYTES_HASH, transaction_hash(tx_obj), NUM_TRITS_HASH, NUM_TRITS_HASH);
-  trytes_81[NUM_TRYTES_HASH] = '\0';
-  printf("hash: %s\n", trytes_81);
+  printf("hash: ");
+  flex_trit_print(transaction_hash(tx_obj), NUM_TRITS_HASH);
+  printf("\n");
+
+  printf("message: \n");
+  flex_trit_print(transaction_message(tx_obj), NUM_TRITS_MESSAGE);
+  printf("\n");
+
+  memcpy(&tx_obj->loaded_columns_mask, &old_mask, sizeof(field_mask_t));
 }
 #endif

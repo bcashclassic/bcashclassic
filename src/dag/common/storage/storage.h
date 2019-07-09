@@ -10,12 +10,13 @@
 
 #include <stdbool.h>
 
+#include "ciri/consensus/snapshot/state_delta.h"
 #include "common/errors.h"
+#include "common/model/bundle.h"
 #include "common/storage/connection.h"
 #include "common/storage/defs.h"
 #include "common/storage/pack.h"
 #include "common/trinary/flex_trit.h"
-#include "consensus/snapshot/state_delta.h"
 #include "utils/containers/hash/hash243_queue.h"
 #include "utils/containers/hash/hash243_set.h"
 #include "utils/containers/hash/hash81_queue.h"
@@ -103,12 +104,6 @@ extern retcode_t iota_stor_transaction_load_hashes_of_approvers(storage_connecti
                                                                 flex_trit_t const* const approvee_hash,
                                                                 iota_stor_pack_t* const pack, int64_t before_timestamp);
 
-extern retcode_t iota_stor_transaction_load_hashes_of_requests(storage_connection_t const* const connection,
-                                                               iota_stor_pack_t* const pack, size_t const limit);
-
-extern retcode_t iota_stor_transaction_load_hashes_of_tips(storage_connection_t const* const connection,
-                                                           iota_stor_pack_t* const pack, size_t const limit);
-
 extern retcode_t iota_stor_transaction_load_hashes_of_milestone_candidates(storage_connection_t const* const connection,
                                                                            iota_stor_pack_t* const pack,
                                                                            flex_trit_t const* const coordinator);
@@ -120,9 +115,21 @@ extern retcode_t iota_stor_transaction_find(storage_connection_t const* const co
                                             hash243_queue_t const addresses, hash81_queue_t const tags,
                                             hash243_queue_t const approvees, iota_stor_pack_t* const pack);
 
+extern retcode_t iota_stor_transaction_metadata_clear(storage_connection_t const* const connection);
+
+/*
+ * Bundle operations
+ */
+
+extern retcode_t iota_stor_bundle_update_validity(storage_connection_t const* const connection,
+                                                  bundle_transactions_t const* const bundle,
+                                                  bundle_status_t const status);
+
 /*
  * Milestone operations
  */
+
+extern retcode_t iota_stor_milestone_clear(storage_connection_t const* const connection);
 
 extern retcode_t iota_stor_milestone_store(storage_connection_t const* const connection,
                                            iota_milestone_t const* const data_in);
@@ -130,14 +137,11 @@ extern retcode_t iota_stor_milestone_store(storage_connection_t const* const con
 extern retcode_t iota_stor_milestone_load(storage_connection_t const* const connection, flex_trit_t const* const hash,
                                           iota_stor_pack_t* const pack);
 
-extern retcode_t iota_stor_milestone_load_first(storage_connection_t const* const connection,
-                                                iota_stor_pack_t* const pack);
-
 extern retcode_t iota_stor_milestone_load_last(storage_connection_t const* const connection,
                                                iota_stor_pack_t* const pack);
 
-extern retcode_t iota_stor_milestone_load_next(storage_connection_t const* const connection, uint64_t const index,
-                                               iota_stor_pack_t* const pack);
+extern retcode_t iota_stor_milestone_load_by_index(storage_connection_t const* const connection, uint64_t const index,
+                                                   iota_stor_pack_t* const pack);
 
 extern retcode_t iota_stor_milestone_exist(storage_connection_t const* const connection, flex_trit_t const* const hash,
                                            bool* const exist);
@@ -151,6 +155,19 @@ extern retcode_t iota_stor_state_delta_store(storage_connection_t const* const c
 
 extern retcode_t iota_stor_state_delta_load(storage_connection_t const* const connection, uint64_t const index,
                                             state_delta_t* const delta);
+
+/*
+ * Spent address operations
+ */
+
+extern retcode_t iota_stor_spent_address_store(storage_connection_t const* const connection,
+                                               flex_trit_t const* const address);
+
+extern retcode_t iota_stor_spent_addresses_store(storage_connection_t const* const connection,
+                                                 hash243_set_t const addresses);
+
+extern retcode_t iota_stor_spent_address_exist(storage_connection_t const* const connection,
+                                               flex_trit_t const* const address, bool* const exist);
 
 #ifdef __cplusplus
 }

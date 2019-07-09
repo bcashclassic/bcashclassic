@@ -12,14 +12,14 @@
 
 retcode_t iota_client_get_transaction_objects(iota_client_service_t const* const serv,
                                               get_trytes_req_t* const tx_hashes, transaction_array_t* out_tx_objs) {
-  retcode_t ret_code = RC_OK;
+  retcode_t ret_code = RC_ERROR;
   hash8019_queue_entry_t* q_iter = NULL;
   iota_transaction_t tx;
   size_t tx_deserialize_offset = 0;
   get_trytes_res_t* out_trytes = get_trytes_res_new();
 
   if (!out_trytes) {
-    ret_code = RC_CCLIENT_OOM;
+    ret_code = RC_OOM;
     log_error(client_extended_logger_id, "%s: create get trytes response failed: %s\n", __func__,
               error_2_string(ret_code));
     goto done;
