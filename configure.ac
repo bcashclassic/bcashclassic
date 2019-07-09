@@ -912,7 +912,7 @@ fi
 if test x$use_boost = xyes; then
 
 dnl Minimum required Boost version
-define(MINIMUM_REQUIRED_BOOST, 1.47.0)
+define(MINIMUM_REQUIRED_BOOST, 1.66.0)
 
 dnl Check for boost libs
 AX_BOOST_BASE([MINIMUM_REQUIRED_BOOST])
@@ -1382,6 +1382,13 @@ if test x$build_bitcoin_cli$build_bitcoin_tx$build_bitcoin_libs$build_bitcoind$b
   AC_MSG_ERROR([No targets! Please specify at least one of: --with-utils --with-libs --with-daemon --with-gui --enable-bench or --enable-tests])
 fi
 
+dnl must confirm libsqlite3 exist
+AC_CHECK_HEADER([sqlite3.h],, AC_MSG_ERROR(libsqlite3 headers missing),)
+AC_CHECK_LIB([sqlite3],         [main],SQLITE3_LIBS=-lsqlite3, AC_MSG_ERROR(libsqlite3 missing))
+
+AC_CHECK_HEADER([cjson/cJSON.h],, AC_MSG_ERROR(libcjson headers missing),)
+AC_CHECK_LIB([cjson],         [main],CJSON_LIBS=-lcjson, AC_MSG_ERROR(libcjson missing))
+
 AM_CONDITIONAL([TARGET_DARWIN], [test x$TARGET_OS = xdarwin])
 AM_CONDITIONAL([BUILD_DARWIN], [test x$BUILD_OS = xdarwin])
 AM_CONDITIONAL([TARGET_WINDOWS], [test x$TARGET_OS = xwindows])
@@ -1460,6 +1467,8 @@ AC_SUBST(EVENT_PTHREADS_LIBS)
 AC_SUBST(ZMQ_LIBS)
 AC_SUBST(PROTOBUF_LIBS)
 AC_SUBST(QR_LIBS)
+AC_SUBST(SQLITE3_LIBS)
+AC_SUBST(CJSON_LIBS)
 AC_CONFIG_FILES([Makefile src/Makefile doc/man/Makefile share/setup.nsi share/qt/Info.plist test/config.ini])
 AC_CONFIG_FILES([contrib/devtools/split-debug.sh],[chmod +x contrib/devtools/split-debug.sh])
 AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([doc/Doxyfile])])
