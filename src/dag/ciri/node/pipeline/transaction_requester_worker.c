@@ -61,6 +61,7 @@ static void *transaction_requester_routine(transaction_requester_t *const transa
         memset(transaction, FLEX_TRIT_NULL_VALUE, FLEX_TRIT_SIZE_8019);
       }
     }
+    log_debug(logger_id, "Sending request %s\n", (char*)hash);
     rw_lock_handle_rdlock(&transaction_requester->node->neighbors_lock);
     LL_FOREACH(transaction_requester->node->neighbors, iter) {
       if (neighbor_send(transaction_requester->node, &tangle, iter, transaction) != RC_OK) {

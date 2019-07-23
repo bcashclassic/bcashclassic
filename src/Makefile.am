@@ -694,6 +694,8 @@ libdag_ciri_a_SOURCES = \
 libdag_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)  $(DAG_INCLUDES) $(PIC_FLAGS)
 libdag_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) $(PIC_FLAGS)
 libdag_common_a_SOURCES = \
+  dag/external/sqlite3/shell.c \
+  dag/external/sqlite3/sqlite3.c \
   dag/common/errors.c \
   dag/common/crypto/kerl/bigint.c \
   dag/common/crypto/kerl/converter.c \
@@ -896,7 +898,8 @@ bitcoind_LDADD = \
 
 # TODO cd <bazel-cache xxhash src>; make install; cp /usr/local/lib/libxxhash.a src/.
 bitcoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) 
-bitcoind_LDADD += $(SQLITE3_LIBS) $(CJSON_LIBS) libxxhash.a
+bitcoind_LDADD += $(CJSON_LIBS) libxxhash.a
+bitcoind_LDADD += -ldl
 
 ##keccak test
 bitcoind_LDADD += -lkeccak

@@ -227,6 +227,50 @@ static void* milestone_validator(void* arg) {
   return NULL;
 }
 
+static void ask_for_parent_tx(milestone_tracker_t* const mt, tangle_t *const tangle, flex_trit_t const *const hash) {
+  log_info(logger_id, "check %.81s\n", hash);
+  retcode_t ret = RC_OK;
+  DECLARE_PACK_SINGLE_TX(tx, tx_ptr, pack);
+
+  if ((ret = iota_tangle_transaction_load(tangle, TRANSACTION_FIELD_HASH, hash, &pack)) != RC_OK) {
+    log_info(logger_id, "tx not found %s\n", hash);
+    return;
+  }
+
+  iota_transaction_t *transaction = ((iota_transaction_t **)(pack.models))[0];
+  log_info(logger_id, "branch %.81s\n", transaction->attachment.branch);
+  iota_milestone_tracker_add_candidate(mt, transaction->attachment.branch);
+  //log_info(logger_id, "bundle %.81s\n", transaction->essence.bundle);
+  //iota_milestone_tracker_add_candidate(mt, transaction->essence.bundle);
+}
+
+static retcode_t
+load_next_milestone(milestone_tracker_t* const mt, tangle_t* const tangle, uint64_t tmp_index,
+  iota_stor_pack_t *const pack) {
+  retcode_t ret = RC_OK;
+  while (1) {
+    if ((ret = iota_tangle_milestone_load_by_index(tangle, tmp_index, pack)) !=
+        RC_OK) {
+      return ret;
+    }
+    if (pack->num_loaded == 0 && tmp_index <= mt->latest_milestone_index) {
+      // log_info(logger_id, "not found %d %d\n", tmp_index, milestone.index);
+      (tmp_index)++;
+    } else if (tmp_index > mt->latest_milestone_index) {
+      return 0xBAD;
+    } else {
+      // if there is gap, should we jump out here asking for missing tx then wait for milestone complete
+      if (1 < (tmp_index - mt->latest_solid_subtangle_milestone_index)) {
+        // ask_for_parent_tx(mt, tangle, milestone.hash);
+        return ret;
+      }
+      break;
+      // log_info(logger_id, "too big %d %d\n", tmp_index, milestone.index);
+    }
+  }
+  return ret;
+}
+
 retcode_t update_latest_solid_subtangle_milestone(milestone_tracker_t* const mt, tangle_t* const tangle) {
   retcode_t ret = RC_OK;
   DECLARE_PACK_SINGLE_MILESTONE(milestone, milestone_ptr, pack);
@@ -237,12 +281,13 @@ retcode_t update_latest_solid_subtangle_milestone(milestone_tracker_t* const mt,
     return RC_NULL_PARAM;
   }
 
-  if ((ret = iota_tangle_milestone_load_by_index(tangle, mt->latest_solid_subtangle_milestone_index + 1, &pack)) !=
+  if ((ret = load_next_milestone(mt, tangle, mt->latest_solid_subtangle_milestone_index + 1, &pack)) !=
       RC_OK) {
     return ret;
   }
 
   while (pack.num_loaded != 0 && milestone.index <= mt->latest_milestone_index && mt->running) {
+    log_info(logger_id, "jumpto %d %.81s\n", milestone.index, milestone.hash);
     has_snapshot = false;
     is_solid = false;
 
@@ -271,7 +316,7 @@ retcode_t update_latest_solid_subtangle_milestone(milestone_tracker_t* const mt,
       break;
     }
     pack.num_loaded = 0;
-    if ((ret = iota_tangle_milestone_load_by_index(tangle, mt->latest_solid_subtangle_milestone_index + 1, &pack)) !=
+    if ((ret = load_next_milestone(mt, tangle, mt->latest_solid_subtangle_milestone_index + 1, &pack)) !=
         RC_OK) {
       return ret;
     }
