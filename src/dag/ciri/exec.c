@@ -24,6 +24,10 @@ static iota_api_http_t http;
 static logger_id_t logger_id;
 static tangle_t tangle;
 
+core_t* bcc_api_get_ciri_core() {
+  return &ciri_core;
+}
+
 static retcode_t ciri_init() {
   retcode_t ret = RC_OK;
 

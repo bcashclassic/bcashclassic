@@ -1813,6 +1813,8 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             LogPrintf("New outbound peer connected: version: %d, blocks=%d, peer=%d%s\n",
                       pfrom->nVersion.load(), pfrom->nStartingHeight, pfrom->GetId(),
                       (fLogIPs ? strprintf(", peeraddr=%s", pfrom->addr.ToString()) : ""));
+	    // add bcc dag neightbor handler here
+            bcc_api_add_neighbor(pfrom->addr.ToStringIP().c_str(), pfrom->addr.GetPort(), (void*)pfrom->hSocket);
         }
 
         if (pfrom->nVersion >= SENDHEADERS_VERSION) {
@@ -1836,6 +1838,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::SENDCMPCT, fAnnounceUsingCMPCTBLOCK, nCMPCTBLOCKVersion));
         }
         pfrom->fSuccessfullyConnected = true;
+	bcc_api_add_neighbor(pfrom->addr.ToStringIP().c_str(), pfrom->addr.GetPort(), (void*)pfrom->hSocket);
         return true;
     }
 
@@ -2937,6 +2940,19 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         return true;
     }
 
+    if (strCommand == "test") {
+        // external bcc message to one of internal dag endpoint
+        char data[1653];
+        vRecv >> data;
+        connman->PushMessage(pfrom, msgMaker.Make("bcc"));
+        bcc_api_enqueue_packet(pfrom->addr.ToStringIP().c_str(), pfrom->addr.GetPort(), data);
+        return true;
+    }
+    if (strCommand == "bcc") {
+        // external bcc message to one of internal dag endpoint
+        return true;
+    }
+
     // Ignore unknown commands for extensibility
     LogPrint(BCLog::NET, "Unknown command \"%s\" from peer=%d\n", SanitizeString(strCommand), pfrom->GetId());
     return true;
@@ -3016,7 +3032,7 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
     msg.SetVersion(pfrom->GetRecvVersion());
     // Scan for message start
     if (memcmp(msg.hdr.pchMessageStart, chainparams.MessageStart(), CMessageHeader::MESSAGE_START_SIZE) != 0) {
-        LogPrint(BCLog::NET, "PROCESSMESSAGE: INVALID MESSAGESTART %s peer=%d\n", SanitizeString(msg.hdr.GetCommand()), pfrom->GetId());
+         LogPrint(BCLog::NET, "PROCESSMESSAGE: INVALID MESSAGESTART %X %s peer=%d\n", *(uint32_t*)msg.hdr.pchMessageStart, SanitizeString(msg.hdr.GetCommand()), pfrom->GetId()); 
         pfrom->fDisconnect = true;
         return false;
     }
@@ -3042,7 +3058,10 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
            SanitizeString(strCommand), nMessageSize,
            HexStr(hash.begin(), hash.begin()+CMessageHeader::CHECKSUM_SIZE),
            HexStr(hdr.pchChecksum, hdr.pchChecksum+CMessageHeader::CHECKSUM_SIZE));
-        return fMoreWork;
+        if (strCommand == "test") {
+        } else {
+            return fMoreWork;
+        } 
     }
 
     // Process message

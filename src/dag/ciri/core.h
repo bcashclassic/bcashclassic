@@ -62,6 +62,8 @@ retcode_t core_stop(core_t *const core);
  */
 retcode_t core_destroy(core_t *const core);
 
+core_t * bcc_api_get_ciri_core();
+
 #ifdef __cplusplus
 }
 #endif

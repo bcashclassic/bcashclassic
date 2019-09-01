@@ -54,14 +54,30 @@ bool tcp_send(endpoint_t *const endpoint, iota_packet_t const *const packet) {
 
   try {
     char crc[CRC_SIZE + 1];
-    auto socket = reinterpret_cast<boost::asio::ip::tcp::socket *>(endpoint->opaque_inetaddr);
+    int64_t socket = (int64_t)(endpoint->opaque_inetaddr);
     boost::system::error_code ignored_error;
     boost::crc_32_type result;
 
     result.process_bytes(packet->content, PACKET_SIZE);
     snprintf(crc, CRC_SIZE + 1, "%0*x", CRC_SIZE, result.checksum());
-    boost::asio::write(*socket, boost::asio::buffer(packet->content), ignored_error);
-    boost::asio::write(*socket, boost::asio::buffer(crc, CRC_SIZE), ignored_error);
+    //boost::asio::write(*socket, boost::asio::buffer(packet->content), ignored_error);
+    //boost::asio::write(*socket, boost::asio::buffer(crc, CRC_SIZE), ignored_error);
+    //send(pnode->hSocket, reinterpret_cast<const char*>(data), data.size() - pnode->nSendOffset, MSG_NOSIGNAL | MSG_DONTWAIT);
+    int flags = 0x4000 | 0x40;
+    uint32_t size = 4+12+4+4; //magic command len crc [packet]
+    uint32_t payload_len = PACKET_SIZE;
+    size += payload_len;
+    char data[2500] = {0};
+    uint32_t magic = 0xd9b4bef9; // reverse order of bitcoin coid magic
+    memcpy(data, &magic, 4);
+    memcpy(data+4, "test", 4);
+    memcpy(data+16, &payload_len, 4);
+    //memcpy(data+16, &crc, 4);
+    memcpy(data+24, packet->content, payload_len);
+    ssize_t n = send(socket, data, size, flags);
+    if (n == 0) {
+      endpoint->opaque_inetaddr = NULL;
+    }
   } catch (...) {
     return false;
   }

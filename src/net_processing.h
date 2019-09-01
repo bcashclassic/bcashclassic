@@ -86,5 +86,14 @@ struct CNodeStateStats {
 
 /** Get statistics from node state */
 bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats);
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern void bcc_api_add_neighbor(char const* ip, int port, void* sock);
+extern void bcc_api_enqueue_packet(char const* ip, int port, char * data);
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // BITCOIN_NET_PROCESSING_H

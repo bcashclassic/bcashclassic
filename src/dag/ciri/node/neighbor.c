@@ -109,6 +109,11 @@ static int neighbor_cmp(neighbor_t const *const lhs, neighbor_t const *const rhs
     return false;
   }
 
+  if (lhs->endpoint.protocol == rhs->endpoint.protocol &&
+        lhs->endpoint.protocol == PROTOCOL_TCP) {
+    return !(strcmp(lhs->endpoint.ip, rhs->endpoint.ip) == 0 || strcmp(lhs->endpoint.host, rhs->endpoint.host) == 0);
+  }
+
   return !((strcmp(lhs->endpoint.ip, rhs->endpoint.ip) == 0 || strcmp(lhs->endpoint.host, rhs->endpoint.host) == 0) &&
            lhs->endpoint.port == rhs->endpoint.port && lhs->endpoint.protocol == rhs->endpoint.protocol);
 }
@@ -124,6 +129,9 @@ retcode_t neighbors_add(neighbor_t **const neighbors, neighbor_t const *const ne
   LL_SEARCH(*neighbors, elt, neighbor, neighbor_cmp);
 
   if (elt != NULL) {
+    if (elt->endpoint.protocol == PROTOCOL_TCP) {
+      elt->endpoint.opaque_inetaddr = neighbor->endpoint.opaque_inetaddr;
+    }
     return RC_NEIGHBOR_ALREADY_PAIRED;
   }
 

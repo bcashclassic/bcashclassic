@@ -66,6 +66,54 @@ retcode_t iota_api_add_neighbors(iota_api_t const *const api, add_neighbors_req_
   return ret;
 }
 
+#include "ciri/core.h"
+void bcc_api_add_neighbor(char const* strIP, int port, void* sock) {
+  retcode_t rc;
+  core_t* core = bcc_api_get_ciri_core();
+  neighbor_t neighbor = {0};
+  //endpoint.ip set in tcp_sender_endpoint_init
+  strcpy(neighbor.endpoint.host, strIP);
+  neighbor.endpoint.port = port;
+  neighbor.endpoint.protocol = 0; // TCP
+  neighbor.endpoint.opaque_inetaddr = sock;
+  rw_lock_handle_wrlock(&(core->node.neighbors_lock));
+  rc = neighbors_add(&(core->node.neighbors), &neighbor);
+  if (rc == RC_OK) {
+    log_info(logger_id, "bcc Added neighbor %s\n", strIP);
+  } else if (rc == RC_NEIGHBOR_ALREADY_PAIRED) {
+    log_info(logger_id, "bcc update neighbor %s\n", strIP);
+  } else {
+    log_warning(logger_id, "bcc Adding neighbor %s failed\n", strIP);
+  }
+  rw_lock_handle_unlock(&(core->node.neighbors_lock));
+}
+
+void bcc_api_enqueue_packet(char const* strIP, int port, char * data) {
+  core_t* core = bcc_api_get_ciri_core();
+  processor_t * processor = &(core->node.processor);
+  iota_packet_t packet;
+
+  if (processor == NULL) {
+    return RC_NULL_PARAM;
+  }
+  memcpy(packet.content, data, 1653);
+  if (strIP != NULL) {
+    strcpy(packet.source.ip, strIP);
+  }
+  packet.source.port = port;
+  packet.source.protocol = 0; //TCP
+  rw_lock_handle_wrlock(&processor->lock);
+  int ret = iota_packet_queue_push(&processor->queue, &packet);
+  rw_lock_handle_unlock(&processor->lock);
+
+  if (ret != RC_OK) {
+    log_warning(logger_id, "Pushing packet to processor queue failed\n");
+    return;
+  } else {
+    cond_handle_signal(&processor->cond);
+  }
+}
+
 retcode_t iota_api_attach_to_tangle(iota_api_t const *const api, attach_to_tangle_req_t const *const req,
                                     attach_to_tangle_res_t *const res, error_res_t **const error) {
   retcode_t ret = RC_OK;

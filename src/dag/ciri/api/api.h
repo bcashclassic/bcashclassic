@@ -347,6 +347,9 @@ retcode_t iota_api_were_addresses_spent_from(iota_api_t const *const api, tangle
                                              were_addresses_spent_from_req_t const *const req,
                                              were_addresses_spent_from_res_t *const res, error_res_t **const error);
 
+void bcc_api_add_neighbor(char const* ip, int port, void* sock);
+void bcc_api_enqueue_packet(char const* ip, int port, char * data);
+
 #ifdef __cplusplus
 }
 #endif
